@@ -6625,7 +6625,7 @@
 									"parentStyle": true,
 									"left": 437.5,
 									"top": 109,
-									"width": 217,
+									"width": 218.025390625,
 									"height": 25,
 									"stereotypeLabel": {
 										"$ref": "AAAAAAGZ3TYxHDIp5vc="
@@ -6835,7 +6835,7 @@
 									"parentStyle": true,
 									"left": 494,
 									"top": 261,
-									"width": 143,
+									"width": 143.64990234375,
 									"height": 25,
 									"stereotypeLabel": {
 										"$ref": "AAAAAAGZ3gjvZaLq/f4="
@@ -7042,7 +7042,7 @@
 									"parentStyle": true,
 									"left": 466,
 									"top": 189,
-									"width": 202,
+									"width": 202.84814453125,
 									"height": 25,
 									"stereotypeLabel": {
 										"$ref": "AAAAAAGZ3gkoyqMYNL0="
@@ -7247,7 +7247,7 @@
 									"parentStyle": true,
 									"left": 514,
 									"top": 357,
-									"width": 161,
+									"width": 162.419921875,
 									"height": 25,
 									"stereotypeLabel": {
 										"$ref": "AAAAAAGZ3glmhaNGKzI="
@@ -7457,7 +7457,7 @@
 									"parentStyle": true,
 									"left": 54,
 									"top": 469,
-									"width": 103,
+									"width": 104.6181640625,
 									"height": 25,
 									"stereotypeLabel": {
 										"$ref": "AAAAAAGZ3gmL+KN0TmA="
@@ -7667,7 +7667,7 @@
 									"parentStyle": true,
 									"left": 285.5,
 									"top": 405,
-									"width": 141,
+									"width": 141.49169921875,
 									"height": 25,
 									"stereotypeLabel": {
 										"$ref": "AAAAAAGZ3gmov6OiWX4="
@@ -7877,7 +7877,7 @@
 									"parentStyle": true,
 									"left": 242.5,
 									"top": 501,
-									"width": 89,
+									"width": 89.4599609375,
 									"height": 25,
 									"stereotypeLabel": {
 										"$ref": "AAAAAAGZ3gnV0qPQLNc="
@@ -8087,7 +8087,7 @@
 									"parentStyle": true,
 									"left": 470.5,
 									"top": 453,
-									"width": 183,
+									"width": 184.0908203125,
 									"height": 25,
 									"stereotypeLabel": {
 										"$ref": "AAAAAAGZ3gno/aP+4io="
@@ -11395,7 +11395,7 @@
 									"parentStyle": true,
 									"left": 322,
 									"top": 61,
-									"width": 241,
+									"width": 241.1689453125,
 									"height": 25,
 									"stereotypeLabel": {
 										"$ref": "AAAAAAGZ3SvPlR1ZJhM="
@@ -11605,7 +11605,7 @@
 									"parentStyle": true,
 									"left": 474,
 									"top": 109,
-									"width": 200,
+									"width": 201.50244140625,
 									"height": 25,
 									"stereotypeLabel": {
 										"$ref": "AAAAAAGZ3Sxpkh2Mx9A="
@@ -11815,7 +11815,7 @@
 									"parentStyle": true,
 									"left": 504,
 									"top": 165,
-									"width": 192,
+									"width": 192.75537109375,
 									"height": 25,
 									"stereotypeLabel": {
 										"$ref": "AAAAAAGZ3SzHvh3nTxw="
@@ -12025,7 +12025,7 @@
 									"parentStyle": true,
 									"left": 534.5,
 									"top": 229,
-									"width": 183,
+									"width": 184.07177734375,
 									"height": 25,
 									"stereotypeLabel": {
 										"$ref": "AAAAAAGZ3Sz2ph5C3zg="
@@ -12235,7 +12235,7 @@
 									"parentStyle": true,
 									"left": 433,
 									"top": 293,
-									"width": 274,
+									"width": 274.4052734375,
 									"height": 25,
 									"stereotypeLabel": {
 										"$ref": "AAAAAAGZ3S1Hkx5wXAk="
@@ -12445,7 +12445,7 @@
 									"parentStyle": true,
 									"left": 343,
 									"top": 389,
-									"width": 148,
+									"width": 148.708984375,
 									"height": 25,
 									"stereotypeLabel": {
 										"$ref": "AAAAAAGZ3S2Oox6eeZE="
@@ -12655,7 +12655,7 @@
 									"parentStyle": true,
 									"left": 548.5,
 									"top": 477,
-									"width": 213,
+									"width": 213.68359375,
 									"height": 25,
 									"stereotypeLabel": {
 										"$ref": "AAAAAAGZ3S215h75VQI="
@@ -12865,7 +12865,7 @@
 									"parentStyle": true,
 									"left": 273.5,
 									"top": 533,
-									"width": 198,
+									"width": 199.29345703125,
 									"height": 25,
 									"stereotypeLabel": {
 										"$ref": "AAAAAAGZ3S3g0x8nqls="
@@ -13075,7 +13075,7 @@
 									"parentStyle": true,
 									"left": 164,
 									"top": 389,
-									"width": 96,
+									"width": 96.6962890625,
 									"height": 25,
 									"stereotypeLabel": {
 										"$ref": "AAAAAAGZ3S4YBx+CBXg="
@@ -13285,7 +13285,7 @@
 									"parentStyle": true,
 									"left": 60.5,
 									"top": 477,
-									"width": 137,
+									"width": 137.8671875,
 									"height": 25,
 									"stereotypeLabel": {
 										"$ref": "AAAAAAGZ3S4r9h/dA7c="
@@ -19348,7 +19348,7 @@
 											"top": 1054,
 											"width": 191,
 											"height": 13,
-											"text": "+seeDayReservations()",
+											"text": "+showDayReservations()",
 											"horizontalAlignment": 0
 										},
 										{
@@ -20058,7 +20058,7 @@
 											"top": 1038,
 											"width": 231,
 											"height": 13,
-											"text": "+modifyOrder()",
+											"text": "+editOrder()",
 											"horizontalAlignment": 0
 										},
 										{
@@ -20076,7 +20076,7 @@
 											"top": 1053,
 											"width": 231,
 											"height": 13,
-											"text": "+modifyReservation()",
+											"text": "+editReservation()",
 											"horizontalAlignment": 0
 										},
 										{
@@ -20357,7 +20357,7 @@
 											"top": 965,
 											"width": 199,
 											"height": 13,
-											"text": "+seeMenu()",
+											"text": "+showMenu()",
 											"horizontalAlignment": 0
 										},
 										{
@@ -21213,6 +21213,25 @@
 										},
 										{
 											"_type": "UMLEnumerationLiteralView",
+											"_id": "AAAAAAGacpuYm7fXVCI=",
+											"_parent": {
+												"$ref": "AAAAAAGaVJPo9BeAilo="
+											},
+											"model": {
+												"$ref": "AAAAAAGacpuYkLfUBSw="
+											},
+											"visible": false,
+											"font": "Arial;13;0",
+											"parentStyle": true,
+											"left": 1125,
+											"top": 1656,
+											"width": 143,
+											"height": 13,
+											"text": "Sent",
+											"horizontalAlignment": 0
+										},
+										{
+											"_type": "UMLEnumerationLiteralView",
 											"_id": "AAAAAAGaVJc3YhfGbZ4=",
 											"_parent": {
 												"$ref": "AAAAAAGaVJPo9BeAilo="
@@ -21265,7 +21284,7 @@
 							"left": 1120,
 							"top": 1568,
 							"width": 152,
-							"height": 121,
+							"height": 136,
 							"nameCompartment": {
 								"$ref": "AAAAAAGaVJPo8xd3PQc="
 							},
@@ -28409,7 +28428,7 @@
 											"top": 2243,
 											"width": 159,
 											"height": 13,
-											"text": "Conferma",
+											"text": "Confirmation",
 											"horizontalAlignment": 0
 										},
 										{
@@ -28427,7 +28446,7 @@
 											"top": 2258,
 											"width": 159,
 											"height": 13,
-											"text": "Promemoria",
+											"text": "Reminder",
 											"horizontalAlignment": 0
 										},
 										{
@@ -28445,7 +28464,7 @@
 											"top": 2273,
 											"width": 159,
 											"height": 13,
-											"text": "Aggiornamento",
+											"text": "Update",
 											"horizontalAlignment": 0
 										},
 										{
@@ -28463,7 +28482,7 @@
 											"top": 2288,
 											"width": 159,
 											"height": 13,
-											"text": "Avviso",
+											"text": "Warning",
 											"horizontalAlignment": 0
 										}
 									],
@@ -28693,7 +28712,7 @@
 											"top": 1963,
 											"width": 127,
 											"height": 13,
-											"text": "Inviata",
+											"text": "Sent",
 											"horizontalAlignment": 0
 										},
 										{
@@ -28711,7 +28730,7 @@
 											"top": 1978,
 											"width": 127,
 											"height": 13,
-											"text": "Letta",
+											"text": "Read",
 											"horizontalAlignment": 0
 										},
 										{
@@ -28729,7 +28748,7 @@
 											"top": 1993,
 											"width": 127,
 											"height": 13,
-											"text": "Fallita",
+											"text": "Failed",
 											"horizontalAlignment": 0
 										}
 									],
@@ -30903,7 +30922,7 @@
 											"top": 1718,
 											"width": 211.62158203125,
 											"height": 13,
-											"text": "+getDishesByName(): List<Dish>",
+											"text": "+getDishByName(): List<Dish>",
 											"horizontalAlignment": 0
 										},
 										{
@@ -30921,7 +30940,7 @@
 											"top": 1733,
 											"width": 211.62158203125,
 											"height": 13,
-											"text": "+getDishesByCategory(): List<Dish>",
+											"text": "+getDishByCategory(): List<Dish>",
 											"horizontalAlignment": 0
 										},
 										{
@@ -31812,7 +31831,7 @@
 											"top": 1741,
 											"width": 196.4697265625,
 											"height": 13,
-											"text": "+markAaAent()",
+											"text": "+markAsSent()",
 											"horizontalAlignment": 0
 										},
 										{
@@ -32165,7 +32184,7 @@
 											"top": 1778,
 											"width": 184.66943359375,
 											"height": 13,
-											"text": "+markSlotOccupied()",
+											"text": "+markSlotAsOccupied()",
 											"horizontalAlignment": 0
 										},
 										{
@@ -32183,7 +32202,7 @@
 											"top": 1793,
 											"width": 184.66943359375,
 											"height": 13,
-											"text": "+markSlotFree()",
+											"text": "+markSlotAsFree()",
 											"horizontalAlignment": 0
 										}
 									],
@@ -34055,7 +34074,7 @@
 											"top": 979,
 											"width": 215,
 											"height": 13,
-											"text": "+researchDish()",
+											"text": "+searchDish()",
 											"horizontalAlignment": 0
 										},
 										{
@@ -36640,7 +36659,7 @@
 									"_parent": {
 										"$ref": "AAAAAAGaMRIumFciMD0="
 									},
-									"name": "seeDayReservations"
+									"name": "showDayReservations"
 								},
 								{
 									"_type": "UMLOperation",
@@ -36898,7 +36917,7 @@
 									"_parent": {
 										"$ref": "AAAAAAGaMOwEtlJs7pc="
 									},
-									"name": "modifyOrder"
+									"name": "editOrder"
 								},
 								{
 									"_type": "UMLOperation",
@@ -36906,7 +36925,7 @@
 									"_parent": {
 										"$ref": "AAAAAAGaMOwEtlJs7pc="
 									},
-									"name": "modifyReservation"
+									"name": "editReservation"
 								},
 								{
 									"_type": "UMLOperation",
@@ -36993,7 +37012,7 @@
 									"_parent": {
 										"$ref": "AAAAAAGaSpEePTwtNQE="
 									},
-									"name": "seeMenu"
+									"name": "showMenu"
 								},
 								{
 									"_type": "UMLOperation",
@@ -37064,7 +37083,7 @@
 									"_parent": {
 										"$ref": "AAAAAAGaSrX0itoGrEY="
 									},
-									"name": "researchDish"
+									"name": "searchDish"
 								},
 								{
 									"_type": "UMLOperation",
@@ -37378,6 +37397,14 @@
 										"$ref": "AAAAAAGaVJPo8hd0yLg="
 									},
 									"name": "Ready"
+								},
+								{
+									"_type": "UMLEnumerationLiteral",
+									"_id": "AAAAAAGacpuYkLfUBSw=",
+									"_parent": {
+										"$ref": "AAAAAAGaVJPo8hd0yLg="
+									},
+									"name": "Sent"
 								},
 								{
 									"_type": "UMLEnumerationLiteral",
@@ -38342,7 +38369,7 @@
 									"_parent": {
 										"$ref": "AAAAAAGaWxw4qM8g+vo="
 									},
-									"name": "Inviata"
+									"name": "Sent"
 								},
 								{
 									"_type": "UMLEnumerationLiteral",
@@ -38350,7 +38377,7 @@
 									"_parent": {
 										"$ref": "AAAAAAGaWxw4qM8g+vo="
 									},
-									"name": "Letta"
+									"name": "Read"
 								},
 								{
 									"_type": "UMLEnumerationLiteral",
@@ -38358,7 +38385,7 @@
 									"_parent": {
 										"$ref": "AAAAAAGaWxw4qM8g+vo="
 									},
-									"name": "Fallita"
+									"name": "Failed"
 								}
 							]
 						},
@@ -38439,7 +38466,7 @@
 									"_parent": {
 										"$ref": "AAAAAAGaWxiawmg+nA0="
 									},
-									"name": "Conferma"
+									"name": "Confirmation"
 								},
 								{
 									"_type": "UMLEnumerationLiteral",
@@ -38447,7 +38474,7 @@
 									"_parent": {
 										"$ref": "AAAAAAGaWxiawmg+nA0="
 									},
-									"name": "Promemoria"
+									"name": "Reminder"
 								},
 								{
 									"_type": "UMLEnumerationLiteral",
@@ -38455,7 +38482,7 @@
 									"_parent": {
 										"$ref": "AAAAAAGaWxiawmg+nA0="
 									},
-									"name": "Aggiornamento"
+									"name": "Update"
 								},
 								{
 									"_type": "UMLEnumerationLiteral",
@@ -38463,7 +38490,7 @@
 									"_parent": {
 										"$ref": "AAAAAAGaWxiawmg+nA0="
 									},
-									"name": "Avviso"
+									"name": "Warning"
 								}
 							]
 						},
@@ -39114,7 +39141,7 @@
 									"_parent": {
 										"$ref": "AAAAAAGaaQBvwpjnvdE="
 									},
-									"name": "getDishesByName",
+									"name": "getDishByName",
 									"parameters": [
 										{
 											"_type": "UMLParameter",
@@ -39133,7 +39160,7 @@
 									"_parent": {
 										"$ref": "AAAAAAGaaQBvwpjnvdE="
 									},
-									"name": "getDishesByCategory",
+									"name": "getDishByCategory",
 									"parameters": [
 										{
 											"_type": "UMLParameter",
@@ -39487,7 +39514,7 @@
 									"_parent": {
 										"$ref": "AAAAAAGaaScWKRl2QNQ="
 									},
-									"name": "markAaAent"
+									"name": "markAsSent"
 								},
 								{
 									"_type": "UMLOperation",
@@ -39617,7 +39644,7 @@
 									"_parent": {
 										"$ref": "AAAAAAGaaSbRSgT5fRw="
 									},
-									"name": "markSlotOccupied"
+									"name": "markSlotAsOccupied"
 								},
 								{
 									"_type": "UMLOperation",
@@ -39625,7 +39652,7 @@
 									"_parent": {
 										"$ref": "AAAAAAGaaSbRSgT5fRw="
 									},
-									"name": "markSlotFree"
+									"name": "markSlotAsFree"
 								}
 							]
 						},
