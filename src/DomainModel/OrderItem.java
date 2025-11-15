@@ -1,0 +1,93 @@
+package DomainModel;
+
+import DomainModel.valueobject.Money;
+
+public class OrderItem {
+
+    private int id;
+    private Dish dish;            // piatto ordinato
+    private Money unitPrice;      // prezzo del piatto al momento dell'ordine
+    private int quantity;         // quantità ordinata
+    private Money totalPrice;     // unitPrice * quantity
+
+    public OrderItem() {}
+
+    public OrderItem(Dish dish, int quantity) {
+        if (dish == null)
+            throw new IllegalArgumentException("Dish cannot be null");
+        if (quantity <= 0)
+            throw new IllegalArgumentException("Quantity must be > 0");
+
+        this.dish = dish;
+        this.unitPrice = dish.getPrice();   // salvi il prezzo al momento dell'ordine
+        this.quantity = quantity;
+        this.totalPrice = unitPrice.multiply(quantity);
+    }
+
+    // ------------------ Getter & Setter ------------------
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) { // impostato dal DAO
+        this.id = id;
+    }
+
+    public Dish getDish() {
+        return dish;
+    }
+
+    public void setDish(Dish dish) {
+        if (dish == null)
+            throw new IllegalArgumentException("Dish cannot be null");
+        this.dish = dish;
+        this.unitPrice = dish.getPrice();
+        recalculateTotal();
+    }
+
+    public Money getUnitPrice() {
+        return unitPrice;
+    }
+
+    // Non dovresti modificare il prezzo esternamente,
+    // ma lo includo se mai il proprietario vuole applicare sconti.
+    public void setUnitPrice(Money unitPrice) {
+        if (unitPrice == null)
+            throw new IllegalArgumentException("Unit price cannot be null");
+        this.unitPrice = unitPrice;
+        recalculateTotal();
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(int quantity) {
+        if (quantity <= 0)
+            throw new IllegalArgumentException("Quantity must be > 0");
+        this.quantity = quantity;
+        recalculateTotal();
+    }
+
+    public Money getTotalPrice() {
+        return totalPrice;
+    }
+
+    private void recalculateTotal() {
+        this.totalPrice = unitPrice.multiply(quantity);
+    }
+
+    // ------------------ ToString ------------------
+
+    @Override
+    public String toString() {
+        return "OrderItem{" +
+                "id=" + id +
+                ", dish=" + dish.getName() +
+                ", quantity=" + quantity +
+                ", unitPrice=" + unitPrice +
+                ", totalPrice=" + totalPrice +
+                '}';
+    }
+}
