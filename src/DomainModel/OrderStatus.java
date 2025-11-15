@@ -5,7 +5,7 @@ public enum OrderStatus {
     PREPARING,
     READY,
     RETIRED,
-    CANCELED;
+    CANCELLED;
 
     public boolean isCreated() {
         return this == CREATED;
@@ -24,16 +24,16 @@ public enum OrderStatus {
     }
 
     public boolean isCancelled() {
-        return this == CANCELED;
+        return this == CANCELLED;
     }
 
     public boolean canTransitionTo(OrderStatus next) {
         return switch (this) {
-            case CREATED    -> next == PREPARING || next == CANCELED;
-            case PREPARING  -> next == READY || next == CANCELED;
-            case READY      -> next == RETIRED || next == CANCELED;
+            case CREATED    -> next == PREPARING || next == CANCELLED;
+            case PREPARING  -> next == READY || next == CANCELLED;
+            case READY      -> next == RETIRED || next == CANCELLED;
             case RETIRED    -> false;
-            case CANCELED  -> false;
+            case CANCELLED  -> false;
         };
     }
 }
