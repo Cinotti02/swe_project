@@ -6,8 +6,6 @@ import DomainModel.User;
 import java.sql.SQLException;
 import java.util.Optional;
 
-import static DomainModel.Role.*;
-
 public class LoginController {
 
     private final AuthService authService;
