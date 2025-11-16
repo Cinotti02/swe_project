@@ -5,9 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import DomainModel.User;
-import DomainModel.Role;
-import DomainModel.valueobject.Email;
+import DomainModel.user.User;
+import DomainModel.user.Role;
+import DomainModel.valueObject.Email;
 
 public class UserDAO {
 

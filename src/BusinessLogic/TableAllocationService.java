@@ -1,6 +1,6 @@
 package BusinessLogic;
 
-import DomainModel.Table;
+import DomainModel.reservation.Table;
 import java.util.ArrayList;
 import java.util.List;
 

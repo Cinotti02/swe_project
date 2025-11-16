@@ -1,4 +1,4 @@
-package DomainModel;
+package DomainModel.user;
 
 public enum Role {
     CUSTOMER,

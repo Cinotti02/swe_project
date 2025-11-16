@@ -1,6 +1,7 @@
-package DomainModel;
+package DomainModel.order;
 
-import DomainModel.valueobject.Money;
+import DomainModel.menu.Dish;
+import DomainModel.valueObject.Money;
 
 public class OrderItem {
 

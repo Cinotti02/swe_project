@@ -1,4 +1,4 @@
-package DomainModel;
+package DomainModel.order;
 
 public enum OrderStatus {
     CREATED,

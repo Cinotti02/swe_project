@@ -1,4 +1,4 @@
-package DomainModel;
+package DomainModel.reservation;
 
 public class Table {
 

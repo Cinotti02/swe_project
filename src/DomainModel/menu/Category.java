@@ -1,4 +1,4 @@
-package DomainModel;
+package DomainModel.menu;
 
 public class Category {
     int id;

@@ -1,7 +1,7 @@
 package Application;
 
 import BusinessLogic.AuthService;
-import DomainModel.User;
+import DomainModel.user.User;
 
 import java.sql.SQLException;
 import java.util.Optional;
