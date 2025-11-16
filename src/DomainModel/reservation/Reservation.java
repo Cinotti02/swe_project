@@ -1,4 +1,6 @@
-package DomainModel;
+package DomainModel.reservation;
+
+import DomainModel.user.User;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;

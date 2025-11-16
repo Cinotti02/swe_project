@@ -1,4 +1,6 @@
-package DomainModel;
+package DomainModel.notification;
+
+import DomainModel.user.User;
 
 import java.time.LocalDateTime;
 

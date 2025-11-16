@@ -1,6 +1,8 @@
-package DomainModel;
+package DomainModel.order;
 
-import DomainModel.valueobject.Money;
+import DomainModel.reservation.Reservation;
+import DomainModel.user.User;
+import DomainModel.valueObject.Money;
 
 import java.time.LocalDateTime;
 

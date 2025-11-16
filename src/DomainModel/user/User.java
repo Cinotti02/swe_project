@@ -1,6 +1,6 @@
-package DomainModel;
+package DomainModel.user;
 
-import DomainModel.valueobject.Email;
+import DomainModel.valueObject.Email;
 
 public class User {
 

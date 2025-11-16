@@ -1,6 +1,6 @@
-package DomainModel;
+package DomainModel.menu;
 
-import DomainModel.valueobject.Money;
+import DomainModel.valueObject.Money;
 
 public class Dish {
     private int id;

@@ -1,4 +1,4 @@
-package DomainModel;
+package DomainModel.notification;
 
 public enum StatusNotification {
     SENT,
