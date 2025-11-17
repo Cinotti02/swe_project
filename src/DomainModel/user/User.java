@@ -8,7 +8,7 @@ public class User {
     private String username;
     private Email email;          // puoi sostituire con Email value object se vuoi
     private String passwordHash;   // PASSWORD HASH con BCrypt
-    private int fidalityPoints;
+    private int fidelityPoints;
     private String name;
     private String surname;
     private Role role;             // enum Role (CUSTOMER, STAFF, OWNER)
@@ -29,7 +29,7 @@ public class User {
         this.name = name;
         this.surname = surname;
         this.role = role;
-        this.fidalityPoints = 0; // default iniziale
+        this.fidelityPoints = 0; // default iniziale
     }
 
     // -----------------------------------------------------
@@ -72,12 +72,12 @@ public class User {
         this.passwordHash = passwordHash;
     }
 
-    public int getFidalityPoints() {
-        return fidalityPoints;
+    public int getFidelityPoints() {
+        return fidelityPoints;
     }
 
-    public void setFidalityPoints(int fidalityPoints) {
-        this.fidalityPoints = fidalityPoints;
+    public void setFidelityPoints(int fidelityPoints) {
+        this.fidelityPoints = fidelityPoints;
     }
 
     public String getName() {

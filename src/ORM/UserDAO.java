@@ -8,16 +8,13 @@ import java.util.Optional;
 import DomainModel.user.User;
 import DomainModel.user.Role;
 import DomainModel.valueObject.Email;
+import ORM.DBConnection;
 
 public class UserDAO {
 
     // Ottieni la connessione (sostituisci con il tuo ConnectionManager / DataSource)
     private Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(
-                "jdbc:mysql://localhost:3306/dineup",
-                "username",
-                "password"
-        );
+        return DBConnection.getConnection();
     }
 
     // ----------------------------------------------------
@@ -25,7 +22,7 @@ public class UserDAO {
     // ----------------------------------------------------
     public void addUser(User user) throws SQLException {
         String sql = """
-                INSERT INTO users(username, email, password_hash, fidality_points, name, surname, role)
+                INSERT INTO users(username, email, password_hash, fidelity_points, name, surname, role)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
                 """;
 
@@ -35,7 +32,7 @@ public class UserDAO {
             ps.setString(1, user.getUsername());
             ps.setString(2, user.getEmailValue());
             ps.setString(3, user.getPasswordHash());
-            ps.setInt(4, user.getFidalityPoints());
+            ps.setInt(4, user.getFidelityPoints());
             ps.setString(5, user.getName());
             ps.setString(6, user.getSurname());
             ps.setString(7, user.getRole().name());
@@ -53,14 +50,15 @@ public class UserDAO {
     // ----------------------------------------------------
     // removeUser()
     // ----------------------------------------------------
-    public void removeUser(int userId) throws SQLException {
+    public boolean removeUser(int userId) throws SQLException {
         String sql = "DELETE FROM users WHERE id = ?";
 
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, userId);
-            ps.executeUpdate();
+            int rows = ps.executeUpdate();
+            return rows > 0;
         }
     }
 
@@ -69,7 +67,7 @@ public class UserDAO {
     // ----------------------------------------------------
     public Optional<User> getUserById(int id) throws SQLException {
         String sql = """
-                SELECT id, username, email, password_hash, fidality_points,
+                SELECT id, username, email, password_hash, fidelity_points,
                        name, surname, role
                 FROM users
                 WHERE id = ?
@@ -93,7 +91,7 @@ public class UserDAO {
     // ----------------------------------------------------
     public Optional<User> getUserByEmail(String email) throws SQLException {
         String sql = """
-                SELECT id, username, email, password_hash, fidality_points,
+                SELECT id, username, email, password_hash, fidelity_points,
                        name, surname, role
                 FROM users
                 WHERE email = ?
@@ -118,7 +116,7 @@ public class UserDAO {
     // ----------------------------------------------------
     public List<User> getUsersByName(String name) throws SQLException {
         String sql = """
-                SELECT id, username, email, password_hash, fidality_points,
+                SELECT id, username, email, password_hash, fidelity_points,
                        name, surname, role
                 FROM users
                 WHERE name LIKE ?
@@ -145,7 +143,7 @@ public class UserDAO {
     // ----------------------------------------------------
     public List<User> getAllUsers() throws SQLException {
         String sql = """
-                SELECT id, username, email, password_hash, fidality_points,
+                SELECT id, username, email, password_hash, fidelity_points,
                        name, surname, role
                 FROM users
                 """;
@@ -170,7 +168,7 @@ public class UserDAO {
     public void updateUser(User user) throws SQLException {
         String sql = """
                 UPDATE users
-                SET username = ?, email = ?, password_hash = ?, fidality_points = ?,
+                SET username = ?, email = ?, password_hash = ?, fidelity_points = ?,
                     name = ?, surname = ?, role = ?
                 WHERE id = ?
                 """;
@@ -181,7 +179,7 @@ public class UserDAO {
             ps.setString(1, user.getUsername());
             ps.setString(2, user.getEmailValue());
             ps.setString(3, user.getPasswordHash());
-            ps.setInt(4, user.getFidalityPoints());
+            ps.setInt(4, user.getFidelityPoints());
             ps.setString(5, user.getName());
             ps.setString(6, user.getSurname());
             ps.setString(7, user.getRole().name());
@@ -215,7 +213,7 @@ public class UserDAO {
         u.setId(rs.getInt("id"));
         u.setUsername(rs.getString("username"));
         u.setPasswordHash(rs.getString("password_hash"));
-        u.setFidalityPoints(rs.getInt("fidality_points"));
+        u.setFidelityPoints(rs.getInt("fidelity_points"));
         u.setName(rs.getString("name"));
         u.setSurname(rs.getString("surname"));
 
