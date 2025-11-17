@@ -17,9 +17,9 @@ public class DBConnection {
         Properties props = new Properties();
         try (FileInputStream fis = new FileInputStream(PROPERTIES_FILE)) {
             props.load(fis);
-            URL = props.getProperty("db.url");
-            USER = props.getProperty("db.user");
-            PASSWORD = props.getProperty("db.password");
+            URL = props.getProperty("db.URL");
+            USER = props.getProperty("db.USER");
+            PASSWORD = props.getProperty("db.PASSWORD");
         } catch (IOException e) {
             System.err.println("Error loading database configuration: " + e.getMessage());
             throw new RuntimeException("Unable to load database configuration", e);
