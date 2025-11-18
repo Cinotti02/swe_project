@@ -8,18 +8,18 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 public class DBConnection {
-    private static final String PROPERTIES_FILE = "src/ORM/db.properties";
-    private static final String URL;
-    private static final String USER;
-    private static final String PASSWORD;
+    private static final String propertiesFile = "src/ORM/db.properties";
+    private static final String url;
+    private static final String user;
+    private static final String password;
 
     static {
         Properties props = new Properties();
-        try (FileInputStream fis = new FileInputStream(PROPERTIES_FILE)) {
+        try (FileInputStream fis = new FileInputStream(propertiesFile)) {
             props.load(fis);
-            URL = props.getProperty("db.URL");
-            USER = props.getProperty("db.USER");
-            PASSWORD = props.getProperty("db.PASSWORD");
+            url = props.getProperty("db.URL");
+            user = props.getProperty("db.USER");
+            password = props.getProperty("db.PASSWORD");
         } catch (IOException e) {
             System.err.println("Error loading database configuration: " + e.getMessage());
             throw new RuntimeException("Unable to load database configuration", e);
@@ -28,6 +28,6 @@ public class DBConnection {
     }
 
     public static Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(URL, USER, PASSWORD);
+        return DriverManager.getConnection(url, user, password);
     }
 }
