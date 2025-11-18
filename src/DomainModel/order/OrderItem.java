@@ -9,7 +9,6 @@ public class OrderItem {
     private Dish dish;            // piatto ordinato
     private Money unitPrice;      // prezzo del piatto al momento dell'ordine
     private int quantity;         // quantità ordinata
-    private Money totalPrice;     // unitPrice * quantity
 
     public OrderItem() {}
 
@@ -22,7 +21,6 @@ public class OrderItem {
         this.dish = dish;
         this.unitPrice = dish.getPrice();   // salvi il prezzo al momento dell'ordine
         this.quantity = quantity;
-        this.totalPrice = unitPrice.multiply(quantity);
     }
 
     // ------------------ Getter & Setter ------------------
@@ -44,7 +42,6 @@ public class OrderItem {
             throw new IllegalArgumentException("Dish cannot be null");
         this.dish = dish;
         this.unitPrice = dish.getPrice();
-        recalculateTotal();
     }
 
     public Money getUnitPrice() {
@@ -57,7 +54,6 @@ public class OrderItem {
         if (unitPrice == null)
             throw new IllegalArgumentException("Unit price cannot be null");
         this.unitPrice = unitPrice;
-        recalculateTotal();
     }
 
     public int getQuantity() {
@@ -68,15 +64,10 @@ public class OrderItem {
         if (quantity <= 0)
             throw new IllegalArgumentException("Quantity must be > 0");
         this.quantity = quantity;
-        recalculateTotal();
     }
 
     public Money getTotalPrice() {
-        return totalPrice;
-    }
-
-    private void recalculateTotal() {
-        this.totalPrice = unitPrice.multiply(quantity);
+        return unitPrice.multiply(quantity);
     }
 
     // ------------------ ToString ------------------
@@ -88,7 +79,7 @@ public class OrderItem {
                 ", dish=" + dish.getName() +
                 ", quantity=" + quantity +
                 ", unitPrice=" + unitPrice +
-                ", totalPrice=" + totalPrice +
+                ", totalPrice=" + getTotalPrice() +
                 '}';
     }
 }
