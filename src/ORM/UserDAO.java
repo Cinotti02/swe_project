@@ -10,12 +10,7 @@ import DomainModel.user.Role;
 import DomainModel.valueObject.Email;
 import ORM.DBConnection;
 
-public class UserDAO {
-
-    // Ottieni la connessione (sostituisci con il tuo ConnectionManager / DataSource)
-    private Connection getConnection() throws SQLException {
-        return DBConnection.getConnection();
-    }
+public class UserDAO extends BaseDAO{
 
     // ----------------------------------------------------
     // addUser()
