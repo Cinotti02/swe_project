@@ -1,4 +1,4 @@
-package Application;
+package Controller;
 
 public class OwnerController {
 }

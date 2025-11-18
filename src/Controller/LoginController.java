@@ -1,6 +1,6 @@
-package Application;
+package Controller;
 
-import BusinessLogic.AuthService;
+import ServiceLayer.AuthService;
 import DomainModel.user.User;
 
 import java.sql.SQLException;

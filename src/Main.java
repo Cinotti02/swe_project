@@ -1,4 +1,4 @@
-import BusinessLogic.AuthService;
+import ServiceLayer.AuthService;
 import ORM.UserDAO;
 import DomainModel.user.User;
 

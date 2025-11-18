@@ -1,4 +1,4 @@
-package BusinessLogic;
+package ServiceLayer;
 
 public class OwnerAdminService {
 }

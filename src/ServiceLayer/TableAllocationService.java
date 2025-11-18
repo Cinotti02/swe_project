@@ -1,4 +1,4 @@
-package BusinessLogic;
+package ServiceLayer;
 
 import DomainModel.reservation.Table;
 import java.util.ArrayList;
