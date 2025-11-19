@@ -1,6 +1,13 @@
-import ServiceLayer.AuthService;
-import ORM.UserDAO;
+import CLI.CustomerCLI;
+import CLI.OwnerCLI;
+import CLI.StaffCLI;
+import Controller.CustomerController;
+import Controller.CustomerProfileController;
+import Controller.OwnerController;
+import Controller.StaffController;
 import DomainModel.user.User;
+import ORM.*;
+import ServiceLayer.*;
 
 import java.sql.SQLException;
 import java.util.Optional;
@@ -8,12 +15,61 @@ import java.util.Scanner;
 
 public class Main {
 
-    public static void main(String[] args) {
+    private final Scanner scanner;
+    private final AuthService authService;
+    private final CustomerCLI customerCLI;
+    private final OwnerCLI ownerCLI;
+    private final StaffCLI staffCLI;
+
+    private Main() {
+        this.scanner = new Scanner(System.in);
 
         UserDAO userDAO = new UserDAO();
-        AuthService authService = new AuthService(userDAO);
-        Scanner scanner = new Scanner(System.in);
+        CategoryDAO categoryDAO = new CategoryDAO();
+        DishDAO dishDAO = new DishDAO();
+        TableDAO tableDAO = new TableDAO();
+        SlotDAO slotDAO = new SlotDAO();
+        ReservationDAO reservationDAO = new ReservationDAO();
+        NotificationDAO notificationDAO = new NotificationDAO();
+        OrderDAO orderDAO = new OrderDAO();
+        OrderItemDAO orderItemDAO = new OrderItemDAO();
 
+        this.authService = new AuthService(userDAO);
+        MenuQueryService menuQueryService = new MenuQueryService(dishDAO, categoryDAO);
+        CartService cartService = new CartService();
+        OrderService orderService = new OrderService(orderDAO, orderItemDAO);
+        TableAllocationService tableAllocationService = new TableAllocationService();
+        ReservationService reservationService = new ReservationService(
+                reservationDAO,
+                tableDAO,
+                slotDAO,
+                notificationDAO,
+                tableAllocationService);
+        OwnerAdminService ownerAdminService = new OwnerAdminService(dishDAO, categoryDAO, tableDAO, slotDAO);
+        ProfileService profileService = new ProfileService(userDAO);
+        StaffOperationService staffOperationService = new StaffOperationService(orderDAO, reservationService, notificationDAO);
+
+        CustomerController customerController = new CustomerController(
+                menuQueryService,
+                cartService,
+                orderService,
+                reservationService);
+        CustomerProfileController customerProfileController = new CustomerProfileController(profileService);
+        OwnerController ownerController = new OwnerController(ownerAdminService, menuQueryService);
+        StaffController staffController = new StaffController(staffOperationService);
+
+        this.customerCLI = new CustomerCLI(customerController, customerProfileController, scanner);
+        this.ownerCLI = new OwnerCLI(ownerController, scanner);
+        this.staffCLI = new StaffCLI(staffController, scanner);
+
+    }
+
+    public static void main(String[] args) {
+        Main app = new Main();
+        app.start();
+    }
+
+    private void start() {
         while (true) {
             System.out.println("=== DINEUP ===");
             System.out.println("1) Login");
@@ -24,8 +80,8 @@ public class Main {
             String choice = scanner.nextLine().trim();
 
             switch (choice) {
-                case "1" -> handleLogin(scanner, authService);
-                case "2" -> handleRegister(scanner, authService);
+                case "1" -> handleLogin();
+                case "2" -> handleRegister();
                 case "0" -> {
                     System.out.println("Ciao!");
                     return;
@@ -35,9 +91,7 @@ public class Main {
         }
     }
 
-    // -------------------- LOGIN --------------------
-
-    private static void handleLogin(Scanner scanner, AuthService authService) {
+    private void handleLogin() {
         try {
             System.out.println("\n--- Login ---");
             System.out.print("Email: ");
@@ -55,9 +109,7 @@ public class Main {
 
             User user = result.get();
             System.out.println("Login effettuato! Benvenuto, " + user.getUsername() + " (" + user.getRole() + ")\n");
-
-            // Dopo il login, vai al menu del cliente/staff/owner
-            userMainMenu(scanner, user);
+            dispatchUser(user);
 
         } catch (IllegalArgumentException e) {
             System.out.println("Errore di input: " + e.getMessage() + "\n");
@@ -67,9 +119,7 @@ public class Main {
         }
     }
 
-    // -------------------- REGISTRAZIONE --------------------
-
-    private static void handleRegister(Scanner scanner, AuthService authService) {
+    private void handleRegister() {
         try {
             System.out.println("\n--- Registrazione nuovo cliente ---");
 
@@ -100,31 +150,14 @@ public class Main {
         }
     }
 
-    // -------------------- MENU UTENTE DOPO LOGIN --------------------
-
-    private static void userMainMenu(Scanner scanner, User user) {
-        while (true) {
-            System.out.println("=== Menu utente (" + user.getRole() + ") ===");
-            System.out.println("1) (TODO) Vedi menu ristorante");
-            System.out.println("2) (TODO) Vedi carrello");
-            System.out.println("3) (TODO) Effettua ordine d'asporto");
-            System.out.println("4) (TODO) Prenota un tavolo");
-            System.out.println("0) Logout");
-            System.out.print("Scelta: ");
-
-            String choice = scanner.nextLine().trim();
-
-            switch (choice) {
-                case "1" -> System.out.println("[TODO] Qui chiameremo DishDAO e mostreremo il menu.\n");
-                case "2" -> System.out.println("[TODO] Qui useremo CartService per mostrare il carrello.\n");
-                case "3" -> System.out.println("[TODO] Qui collegheremo CartService + OrderService.\n");
-                case "4" -> System.out.println("[TODO] Qui useremo ReservationService + TableAllocationService.\n");
-                case "0" -> {
-                    System.out.println("Logout effettuato.\n");
-                    return;
-                }
-                default -> System.out.println("Scelta non valida.\n");
-            }
+    private void dispatchUser(User user) {
+        if (user.isOwner()) {
+            ownerCLI.run(user);
+        } else if (user.isStaff()) {
+            staffCLI.run(user);
+        } else {
+            customerCLI.run(user);
         }
     }
+
 }
