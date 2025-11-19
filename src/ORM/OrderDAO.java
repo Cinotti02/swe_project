@@ -1,6 +1,5 @@
 package ORM;
 
-import DomainModel.*;
 import DomainModel.order.Order;
 import DomainModel.order.OrderStatus;
 import DomainModel.order.PaymentMethod;
