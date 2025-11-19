@@ -84,7 +84,6 @@ CREATE TABLE order_items (
                              dish_id     INT         NOT NULL,
                              unit_price  NUMERIC(10,2) NOT NULL,
                              quantity    INT         NOT NULL,
-                             total_price NUMERIC(10,2) NOT NULL,
 
                              FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
                              FOREIGN KEY (dish_id)  REFERENCES dishes(id)
