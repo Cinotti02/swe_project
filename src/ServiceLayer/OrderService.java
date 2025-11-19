@@ -1,6 +1,5 @@
 package ServiceLayer;
 
-import DomainModel.*;
 import DomainModel.order.Order;
 import DomainModel.order.OrderItem;
 import DomainModel.order.OrderStatus;
