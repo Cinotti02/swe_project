@@ -3,6 +3,7 @@ package CLI;
 import Controller.OwnerController;
 import DomainModel.user.User;
 
+import java.math.BigDecimal;
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 import java.util.Scanner;

@@ -59,6 +59,8 @@ public class CustomerCLI {
     }
 
     private void handleAddDish(User user) {
+        customerController.showMenu();
+        System.out.print("\n--- Aggiungi piatto al carrello ---\n");
         Integer dishId = readInt("ID piatto: ");
         if (dishId == null) return;
         Integer qty = readInt("Quantità: ");
@@ -90,7 +92,12 @@ public class CustomerCLI {
         if (guests == null) return;
         System.out.print("Note (facoltative): ");
         String notes = scanner.nextLine().trim();
-        customerController.createReservation(user, date, slotId, guests, notes.isBlank() ? null : notes);
+        try {
+            customerController.createReservation(user, date, slotId, guests, notes.isBlank() ? null : notes);
+        }
+        catch (IllegalStateException e) {
+            System.out.println("⚠️  Mi dispiace, non ci sono tavoli disponibili per questo orario.\n");
+        }
     }
 
     private void handleCancelReservation(User user) {
