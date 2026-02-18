@@ -116,13 +116,12 @@ public class CategoryDAO extends BaseDAO {
 
         String operator = caseInsensitive ? "ILIKE" : "LIKE";
 
-        //TODO
-        String sql = """ 
-            SELECT id, name, description, active
-            FROM categories
-            WHERE name " + operator + " ?
-            ORDER BY name
-            """;
+        String sql = """
+                SELECT id, name, description, active
+                FROM categories
+                WHERE name %s ?
+                ORDER BY name
+                """.formatted(operator);
 
         List<Category> categories = new ArrayList<>();
 

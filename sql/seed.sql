@@ -109,7 +109,7 @@ VALUES
 -- 6) RESERVATIONS
 -- ===========================
 -- Attenzione: i valori di "status" devono combaciare con il tuo enum ReservationStatus
--- Esempi tipici: PENDING, CONFIRMED, CANCELLED, COMPLETED
+-- Valori attuali: CREATED, CONFIRMED, CHECKED_IN, COMPLETED, NO_SHOW, CANCELED
 
 INSERT INTO reservations (customer_id, guests, reservation_date, slot_id, status, notes)
 VALUES
@@ -126,7 +126,7 @@ VALUES
         2,
         '2025-01-02',
         (SELECT id FROM slots WHERE start_time = '21:00' AND end_time = '23:00'),
-        'PENDING',     -- adatta al tuo enum
+        'CREATED',     -- adatta al tuo enum
         'Prenotazione di prova: 2 persone'
     );
 
@@ -160,9 +160,9 @@ VALUES
 -- 8) ORDERS
 -- ===========================
 -- status e payment_method devono combaciare con i tuoi enum OrderStatus e PaymentMethod
--- Esempi comuni:
---   status: CREATED, IN_PROGRESS, COMPLETED, CANCELLED
---   payment_method: CASH, CARD, ONLINE
+-- Valori attuali:
+--   status: CREATED, PREPARING, READY, RETIRED, CANCELLED
+--   payment_method: ONLINE, IN_LOCO
 
 INSERT INTO orders (customer_id, reservation_id, created_at, status, payment_method, total_amount, notes)
 VALUES
@@ -174,7 +174,7 @@ VALUES
            AND r.reservation_date = '2025-01-01'),
         '2025-01-01 19:30:00',
         'CREATED',    -- adatta al tuo enum
-        'CASH',       -- adatta al tuo enum
+        'IN_LOCO',       -- adatta al tuo enum
         18.50,
         'Ordine di prova: pizza + birra'
     ),
@@ -185,8 +185,8 @@ VALUES
          WHERE u.username = 'customer1'
            AND r.reservation_date = '2025-01-02'),
         '2025-01-02 21:15:00',
-        'PAID',
-        'CARD',
+        'RETIRED',
+        'ONLINE',
         15.00,
         'Ordine di prova: pizza + acqua + dessert'
     );
@@ -233,23 +233,24 @@ VALUES
 -- ===========================
 -- 10) NOTIFICATIONS
 -- ===========================
--- type e status devono combaciare con i tuoi enum NotificationType / NotificationStatus
--- Esempi: type = RESERVATION, ORDER, SYSTEM; status = UNREAD, READ
+-- Valori attuali:
+--   type: CONFIRMATION, REMINDER, UPDATE, ALERT
+--   status: SENT, READ, FAILED
 
 INSERT INTO notifications (recipient_id, message, type, status, created_at, read_at)
 VALUES
     (
         (SELECT id FROM users WHERE username = 'staff1'),
         'Nuova prenotazione per il 1 gennaio (4 ospiti).',
-        'RESERVATION',   -- adatta al tuo enum
-        'UNREAD',
+        'ALERT',
+        'SENT',
         NOW(),
         NULL
     ),
     (
         (SELECT id FROM users WHERE username = 'owner1'),
         'Ordine del 1 gennaio completato e pagato.',
-        'ORDER',
+        'UPDATE',
         'READ',
         NOW() - INTERVAL '1 day',
         NOW() - INTERVAL '23 hours'

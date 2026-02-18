@@ -7,44 +7,52 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 
-public class DBConnection {
-    private static DBConnection instance;
-    private Connection connection;
-    private static final String propertiesFile = "src/ORM/db.properties";
+public final class DBConnection {
+    private static final String PROPERTIES_FILE = "src/ORM/db.properties";
     private static String url;
     private static String user;
     private static String password;
+    private static boolean initialized;
 
     //Costruttore privato
-    private DBConnection() throws SQLException {
-        loadProperties();
-        this.connection = DriverManager.getConnection(url, user, password);
+    private DBConnection(){
     }
 
-    // Carica configurazione
-    private void loadProperties() {
+    public static synchronized Connection getConnection() throws SQLException {
+        if (!initialized) {
+            loadProperties();
+            initialized = true;
+        }
+        return DriverManager.getConnection(url, user, password);
+    }
+
+    private static void loadProperties() {
         Properties props = new Properties();
-        try (FileInputStream fis = new FileInputStream(propertiesFile)) {
+        try (FileInputStream fis = new FileInputStream(PROPERTIES_FILE)) {
             props.load(fis);
-            url = props.getProperty("db.URL");
-            user = props.getProperty("db.USER");
-            password = props.getProperty("db.PASSWORD");
         } catch (IOException e) {
-            System.err.println("Error loading database configuration: " + e.getMessage());
             throw new RuntimeException("Unable to load database configuration", e);
         }
-    }
+        url = readConfig("DB_URL", "db.URL", props);
+        user = readConfig("DB_USER", "db.USER", props);
+        password = readConfig("DB_PASSWORD", "db.PASSWORD", props);
 
-    // Metodo Singleton — thread-safe
-    public static synchronized DBConnection getInstance() throws SQLException {
-        if (instance == null || instance.connection.isClosed()) {
-            instance = new DBConnection();
+        if (url == null || user == null || password == null) {
+            throw new IllegalStateException("Database configuration is incomplete");
         }
-        return instance;
     }
 
     // Ritorna la connessione unica
-    public Connection getConnection() {
-        return connection;
+    private static String readConfig(String envKey, String propKey, Properties props) {
+        String envValue = System.getenv(envKey);
+        if (envValue != null && !envValue.isBlank()) {
+            return envValue.trim();
+        }
+
+        String propertyValue = props.getProperty(propKey);
+        if (propertyValue != null && !propertyValue.isBlank()) {
+            return propertyValue.trim();
+        }
+        return null;
     }
 }

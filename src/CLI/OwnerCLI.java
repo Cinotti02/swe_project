@@ -2,7 +2,6 @@ package CLI;
 
 import Controller.OwnerController;
 import DomainModel.user.User;
-
 import java.math.BigDecimal;
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
@@ -73,7 +72,7 @@ public class OwnerCLI {
         }
         System.out.print("Descrizione: ");
         String description = scanner.nextLine().trim();
-        Double price = readDouble("Prezzo: ");
+        BigDecimal price = readBigDecimal("Prezzo: ");
         if (price == null) return;
         Integer categoryId = readInt("ID categoria: ");
         if (categoryId == null) return;
@@ -85,14 +84,15 @@ public class OwnerCLI {
         if (dishId == null) return;
         boolean active = readYesNo("Impostare disponibile? (s/n): ");
         ownerController.toggleDish(dishId, active);
+
     }
 
     private void handleUpdateDishPrice() {
         Integer dishId = readInt("ID piatto: ");
         if (dishId == null) return;
-        Double price = readDouble("Nuovo prezzo: ");
+        BigDecimal price = readBigDecimal("Nuovo prezzo: ");
         if (price == null) return;
-        ownerController.updateDishPrice(dishId, price);
+        ownerController.updateDishPrice(dishId, price.doubleValue());
     }
 
     private void handleAddTable() {
@@ -134,7 +134,7 @@ public class OwnerCLI {
         }
     }
 
-    private Double readDouble(String prompt) {
+    private BigDecimal readBigDecimal(String prompt) {
         System.out.print(prompt);
         String raw = scanner.nextLine().trim();
         if (raw.isBlank()) {
@@ -142,7 +142,7 @@ public class OwnerCLI {
             return null;
         }
         try {
-            return Double.parseDouble(raw);
+            return new BigDecimal(raw);
         } catch (NumberFormatException e) {
             System.out.println("Inserire un numero valido\n");
             return null;

@@ -23,7 +23,7 @@ public class OrderDAO extends BaseDAO {
                 VALUES (?, ?, ?, ?, ?, ?, ?)
                 """;
 
-        try (Connection conn = DBConnection.getInstance().getConnection();
+        try (Connection conn = DBConnection.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)){
 
             ps.setInt(1, order.getCustomer().getId());
@@ -55,7 +55,7 @@ public class OrderDAO extends BaseDAO {
     public void updateStatus(int orderId, OrderStatus status) throws SQLException {
         String sql = "UPDATE orders SET status = ? WHERE id = ?";
 
-        try (Connection conn = DBConnection.getInstance().getConnection();
+        try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, status.name());
@@ -70,7 +70,7 @@ public class OrderDAO extends BaseDAO {
     public void updatePayment(int orderId, PaymentMethod method) throws SQLException {
         String sql = "UPDATE orders SET payment_method = ? WHERE id = ?";
 
-        try (Connection conn = DBConnection.getInstance().getConnection();
+        try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, method.name());
@@ -85,7 +85,7 @@ public class OrderDAO extends BaseDAO {
     public void deleteOrder(int orderId) throws SQLException {
         String sql = "DELETE FROM orders WHERE id = ?";
 
-        try (Connection conn = DBConnection.getInstance().getConnection();
+        try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, orderId);
@@ -102,7 +102,7 @@ public class OrderDAO extends BaseDAO {
                 FROM orders WHERE id = ?
                 """;
 
-        try (Connection conn = DBConnection.getInstance().getConnection();
+        try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, orderId);
@@ -128,7 +128,7 @@ public class OrderDAO extends BaseDAO {
 
         List<Order> list = new ArrayList<>();
 
-        try (Connection conn = DBConnection.getInstance().getConnection();
+        try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, customerId);
@@ -153,7 +153,7 @@ public class OrderDAO extends BaseDAO {
 
         List<Order> list = new ArrayList<>();
 
-        try (Connection conn = DBConnection.getInstance().getConnection();
+        try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, status.name());
