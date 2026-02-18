@@ -6,7 +6,7 @@ import java.sql.SQLException;
 public abstract class BaseDAO {
 
     protected Connection getConnection() throws SQLException {
-        return DBConnection.getInstance().getConnection();
+        return DBConnection.getConnection();
     }
 
     // Metodi comuni a tutti i DAO (estendibili in futuro)

@@ -76,7 +76,7 @@ public class OwnerCLI {
         if (price == null) return;
         Integer categoryId = readInt("ID categoria: ");
         if (categoryId == null) return;
-        ownerController.addDish(name, description, price, categoryId);
+        ownerController.addDish(name, description, price.doubleValue(), categoryId);
     }
 
     private void handleToggleDish() {

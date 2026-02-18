@@ -49,7 +49,7 @@ public class OwnerController {
         }
     }
 
-    public void addDish(String name, String description, Double price, int categoryId) {
+    public void addDish(String name, String description, double price, int categoryId) {
         try {
             Dish dish = ownerAdminService.createDish(name, description, new Money(price), categoryId);
             System.out.println("Piatto creato con id " + dish.getId());
