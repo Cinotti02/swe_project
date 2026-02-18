@@ -1,6 +1,7 @@
 import CLI.CustomerCLI;
 import CLI.OwnerCLI;
 import CLI.StaffCLI;
+import  Controller.AuthController;
 import Controller.CustomerController;
 import Controller.CustomerProfileController;
 import Controller.OwnerController;
@@ -16,7 +17,7 @@ import java.util.Scanner;
 public class Main {
 
     private final Scanner scanner;
-    private final AuthService authService;
+    private final AuthController authController;
     private final CustomerCLI customerCLI;
     private final OwnerCLI ownerCLI;
     private final StaffCLI staffCLI;
@@ -34,7 +35,8 @@ public class Main {
         OrderDAO orderDAO = new OrderDAO();
         OrderItemDAO orderItemDAO = new OrderItemDAO();
 
-        this.authService = new AuthService(userDAO);
+        AuthService authService = new AuthService(userDAO);
+        this.authController = new AuthController(authService);
         MenuQueryService menuQueryService = new MenuQueryService(dishDAO, categoryDAO);
         CartService cartService = new CartService();
         OrderService orderService = new OrderService(orderDAO, orderItemDAO);
@@ -100,7 +102,7 @@ public class Main {
             System.out.print("Password: ");
             String password = scanner.nextLine().trim();
 
-            Optional<User> result = authService.authenticate(email, password);
+            Optional<User> result = authController.login(email, password);
 
             if (result.isEmpty()) {
                 System.out.println("Credenziali errate.\n");
@@ -138,7 +140,7 @@ public class Main {
             System.out.print("Cognome: ");
             String surname = scanner.nextLine().trim();
 
-            User newUser = authService.registerClient(username, email, password, name, surname);
+            User newUser = authController.registerCustomer(username, email, password, name, surname);
 
             System.out.println("Registrazione completata! ID utente: " + newUser.getId() + "\n");
 

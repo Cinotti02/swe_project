@@ -87,11 +87,6 @@ public class AuthService {
         // Validazione formato email tramite value object
         Email emailVO = new Email(email); // se formato errato, lancia IllegalArgumentException
 
-        // Controllo se esiste già un utente con questa email
-        if (userDAO.emailExists(email)) {
-            throw new IllegalArgumentException("Email already in use");
-        }
-
         // Hash della password con BCrypt
         String hashedPassword = BCrypt.hashpw(rawPassword, BCrypt.gensalt());
 
