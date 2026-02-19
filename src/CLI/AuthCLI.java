@@ -33,7 +33,7 @@ public class AuthCLI {
             }
 
             User user = result.get();
-            System.out.println("Login effettuato! Benvenuto, " + user.getUsername() + " (" + user.getRole() + ")\n");
+            System.out.println("Login effettuato! Benvenuto, " + user.getName() + " (" + user.getRole() + ")\n");
             return Optional.of(user);
 
         } catch (IllegalArgumentException e) {
@@ -76,6 +76,25 @@ public class AuthCLI {
             System.err.println("Errore DB: " + e.getMessage());
             System.out.println("Si è verificato un errore interno. Riprova più tardi.\n");
             return Optional.empty();
+        }
+    }
+
+    public void handleForgotPassword() {
+        try {
+            System.out.println("\n--- Recupero password ---");
+
+            System.out.print("Email: ");
+            String email = scanner.nextLine().trim();
+
+            System.out.print("Nuova password: ");
+            String newPassword = scanner.nextLine().trim();
+
+            authController.resetForgottenPassword(email, newPassword);
+            System.out.println("Password aggiornata con successo. Ora puoi effettuare il login.\n");
+        } catch (IllegalArgumentException e) {
+            System.out.println("Errore: " + e.getMessage() + "\n");
+        } catch (SQLException e) {
+            System.out.println("Si è verificato un errore interno. Riprova più tardi.\n");
         }
     }
 }

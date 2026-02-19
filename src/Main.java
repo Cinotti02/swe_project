@@ -34,6 +34,7 @@ public class Main {
             System.out.println("=== DINEUP ===");
             System.out.println("1) Login");
             System.out.println("2) Register");
+            System.out.println("3) Password dimenticata");
             System.out.println("0) Exit");
             System.out.print("Scelta: ");
 
@@ -42,6 +43,7 @@ public class Main {
             switch (choice) {
                 case "1" -> authCLI.handleLogin().ifPresent(this::dispatchUser);
                 case "2" -> authCLI.handleRegister();
+                case "3" -> authCLI.handleForgotPassword();
                 case "0" -> {
                     System.out.println("Ciao!");
                     return;

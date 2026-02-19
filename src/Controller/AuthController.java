@@ -25,4 +25,8 @@ public class AuthController {
                                  String surname) throws SQLException {
         return authService.registerClient(username, email, password, name, surname);
     }
+
+    public void resetForgottenPassword(String email, String newPassword) throws SQLException {
+        authService.resetPasswordByEmail(email, newPassword);
+    }
 }

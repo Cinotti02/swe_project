@@ -2,6 +2,7 @@ package CLI;
 
 import Controller.StaffController;
 import DomainModel.user.User;
+import DomainModel.order.OrderStatus;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
@@ -19,25 +20,29 @@ public class StaffCLI {
 
     public void run(User user) {
         while (true) {
-            System.out.println("=== Menu staff ===");
+            System.out.println("\n=================================================================");
+            System.out.println("Benvenuto, " + user.getName() + "!");
+            System.out.println("=== Staff ===");
+            System.out.println("");
+            System.out.println("== Asporto ==");
             System.out.println("1) Vedi coda cucina");
-            System.out.println("2) Segna ordine pronto");
-            System.out.println("3) Segna ordine ritirato");
-            System.out.println("4) Prenotazioni per data");
-            System.out.println("5) Conferma prenotazione");
-            System.out.println("6) Check-in prenotazione");
-            System.out.println("7) Segna no-show");
+            System.out.println("2) Aggiorna stato ordine");
+            System.out.println("");
+            System.out.println("== Prenotazioni ==");
+            System.out.println("3) Prenotazioni per data");
+            System.out.println("4) Conferma prenotazione");
+            System.out.println("5) Check-in prenotazione");
+            System.out.println("6) Segna no-show");
             System.out.println("0) Logout");
             System.out.print("Scelta: ");
             String choice = scanner.nextLine().trim();
             switch (choice) {
                 case "1" -> staffController.showKitchenQueue();
-                case "2" -> handleOrderUpdate(true);
-                case "3" -> handleOrderUpdate(false);
-                case "4" -> handleReservationList();
-                case "5" -> handleReservationAction(Action.CONFIRM);
-                case "6" -> handleReservationAction(Action.CHECK_IN);
-                case "7" -> handleReservationAction(Action.NO_SHOW);
+                case "2" -> handleOrderUpdate();
+                case "3" -> handleReservationList();
+                case "4" -> handleReservationAction(Action.CONFIRM);
+                case "5" -> handleReservationAction(Action.CHECK_IN);
+                case "6" -> handleReservationAction(Action.NO_SHOW);
                 case "0" -> {
                     System.out.println("Logout effettuato.\n");
                     return;
@@ -45,17 +50,38 @@ public class StaffCLI {
                 default -> System.out.println("Scelta non valida.\n");
             }
         }
-    }
-
-    private void handleOrderUpdate(boolean markReady) {
+    }private void handleOrderUpdate() {
         Integer orderId = readInt("ID ordine: ");
         if (orderId == null) return;
-        if (markReady) {
-            staffController.markOrderReady(orderId);
-        } else {
-            staffController.markOrderRetired(orderId);
-        }
+
+        OrderStatus targetStatus = readOrderStatus();
+        if (targetStatus == null) return;
+
+        staffController.updateOrderStatus(orderId, targetStatus);
     }
+
+    private OrderStatus readOrderStatus() {
+        System.out.println("Stati disponibili:");
+        System.out.println("1) PREPARING");
+        System.out.println("2) READY");
+        System.out.println("3) RETIRED");
+        System.out.println("4) CANCELLED");
+        System.out.print("Nuovo stato: ");
+
+        String choice = scanner.nextLine().trim();
+        return switch (choice) {
+            case "1" -> OrderStatus.PREPARING;
+            case "2" -> OrderStatus.READY;
+            case "3" -> OrderStatus.RETIRED;
+            case "4" -> OrderStatus.CANCELLED;
+            default -> {
+                System.out.println("Scelta stato non valida\n");
+                yield null;
+            }
+        };
+    }
+
+
 
     private void handleReservationList() {
         LocalDate date = readDate("Data (YYYY-MM-DD): ");

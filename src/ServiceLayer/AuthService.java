@@ -9,15 +9,6 @@ import org.mindrot.jbcrypt.BCrypt;
 import java.sql.SQLException;
 import java.util.Optional;
 
-/**
- * Servizio applicativo per l'autenticazione e la registrazione degli utenti.
- * Si occupa di:
- *  - autenticare un utente dato email e password
- *  - registrare un nuovo client (CUSTOMER)
- *
- * Non fa accesso diretto al DB (delegato a UserDAO)
- * Non fa input/output (questo è compito dei controller / UI).
- */
 public class AuthService {
 
     private final UserDAO userDAO;
@@ -26,13 +17,6 @@ public class AuthService {
         this.userDAO = userDAO;
     }
 
-    /**
-     * Prova ad autenticare un utente dato email e password.
-     *
-     * @param email      email inserita nel form di login
-     * @param rawPassword password in chiaro inserita nel form (prima di eventuale hashing)
-     * @return Optional con l'utente autenticato, vuoto se credenziali non valide
-     */
     public Optional<User> authenticate(String email, String rawPassword) throws SQLException {
         // Validazione input utente
         if (email == null || email.isBlank())
@@ -107,9 +91,6 @@ public class AuthService {
         return newUser;
     }
 
-    /**
-     * Esempio di metodo per cambiare password (opzionale).
-     */
     public void changePassword(User user, String newRawPassword) throws SQLException {
 
         if (newRawPassword == null || newRawPassword.isBlank()) {
@@ -119,5 +100,19 @@ public class AuthService {
         user.setPasswordHash(hashedPassword);
 
         userDAO.updateUser(user);
+    }
+
+    public void resetPasswordByEmail(String email, String newRawPassword) throws SQLException {
+        if (email == null || email.isBlank()) {
+            throw new IllegalArgumentException("Email cannot be empty");
+        }
+
+        String normalizedEmail = email.trim();
+        new Email(normalizedEmail);
+
+        User user = userDAO.getUserByEmail(normalizedEmail)
+                .orElseThrow(() -> new IllegalArgumentException("No user found for email: " + email));
+
+        changePassword(user, newRawPassword);
     }
 }

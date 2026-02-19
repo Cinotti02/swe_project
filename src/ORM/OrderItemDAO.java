@@ -7,7 +7,6 @@ import DomainModel.valueObject.Money;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public class OrderItemDAO extends BaseDAO {
 
@@ -17,8 +16,8 @@ public class OrderItemDAO extends BaseDAO {
      *  ---------------------------------------------------- */
     public void addOrderItem(int orderId, OrderItem item) throws SQLException {
         String sql = """
-                INSERT INTO order_items(order_id, dish_id, unit_price, quantity, total_price)
-                VALUES (?, ?, ?, ?, ?)
+                INSERT INTO order_items(order_id, dish_id, unit_price, quantity)
+                VALUES (?, ?, ?, ?)
                 """;
 
         try (Connection conn = getConnection();
@@ -28,7 +27,6 @@ public class OrderItemDAO extends BaseDAO {
             ps.setInt(2, item.getDish().getId());
             ps.setBigDecimal(3, item.getUnitPrice().getAmount());
             ps.setInt(4, item.getQuantity());
-            ps.setBigDecimal(5, item.getTotalPrice().getAmount());
 
             ps.executeUpdate();
 
@@ -95,7 +93,7 @@ public class OrderItemDAO extends BaseDAO {
         dish.setId(rs.getInt("dish_id"));
         item.setDish(dish);
 
-        item.setUnitPrice(new Money(rs.getDouble("unit_price")));
+        item.setUnitPrice(new Money(rs.getBigDecimal("unit_price")));
         item.setQuantity(rs.getInt("quantity"));
 
         return item;

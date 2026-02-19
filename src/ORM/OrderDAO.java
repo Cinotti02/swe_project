@@ -191,10 +191,29 @@ public class OrderDAO extends BaseDAO {
 
         order.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
         order.setStatus(OrderStatus.valueOf(rs.getString("status")));
-        order.setPaymentMethod(PaymentMethod.valueOf(rs.getString("payment_method")));
+        order.setPaymentMethod(parsePaymentMethod(rs.getString("payment_method"), order.getId()));
         order.setTotalAmount(new Money(rs.getBigDecimal("total_amount")));
         order.setNotes(rs.getString("notes"));
 
         return order;
+    }
+
+    private PaymentMethod parsePaymentMethod(String rawPaymentMethod, int orderId) {
+        if (rawPaymentMethod == null || rawPaymentMethod.isBlank()) {
+            throw new IllegalArgumentException("Missing payment_method for order id " + orderId);
+        }
+
+        String normalized = rawPaymentMethod.trim().toUpperCase();
+        if ("CASH".equals(normalized)) {
+            return PaymentMethod.IN_LOCO;
+        }
+
+        try {
+            return PaymentMethod.valueOf(normalized);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException(
+                    "Unsupported payment_method '" + rawPaymentMethod + "' for order id " + orderId
+            );
+        }
     }
 }

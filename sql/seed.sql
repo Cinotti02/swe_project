@@ -11,7 +11,7 @@
 -- ===========================
 -- 1) USERS (OWNER, STAFF, CUSTOMER)
 -- ===========================
--- Ruoli coerenti con il tuo enum Java (presumo: OWNER, STAFF, CUSTOMER)
+-- Ruoli coerenti con enum Java: OWNER, STAFF, CUSTOMER
 
 INSERT INTO users (username, email, password_hash, fidelity_points, name, surname, role)
 VALUES
@@ -118,7 +118,7 @@ VALUES
         4,
         '2025-01-01',
         (SELECT id FROM slots WHERE start_time = '19:00' AND end_time = '21:00'),
-        'CONFIRMED',   -- adatta al tuo enum
+        'CONFIRMED',
         'Prenotazione di prova: 4 persone, tavoli uniti'
     ),
     (
@@ -126,7 +126,7 @@ VALUES
         2,
         '2025-01-02',
         (SELECT id FROM slots WHERE start_time = '21:00' AND end_time = '23:00'),
-        'CREATED',     -- adatta al tuo enum
+        'CREATED',
         'Prenotazione di prova: 2 persone'
     );
 
@@ -173,8 +173,8 @@ VALUES
          WHERE u.username = 'customer1'
            AND r.reservation_date = '2025-01-01'),
         '2025-01-01 19:30:00',
-        'CREATED',    -- adatta al tuo enum
-        'IN_LOCO',       -- adatta al tuo enum
+        'CREATED',
+        'IN_LOCO',
         18.50,
         'Ordine di prova: pizza + birra'
     ),
