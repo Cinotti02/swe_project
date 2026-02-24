@@ -164,14 +164,10 @@ VALUES
 --   status: CREATED, PREPARING, READY, RETIRED, CANCELLED
 --   payment_method: ONLINE, IN_LOCO
 
-INSERT INTO orders (customer_id, reservation_id, created_at, status, payment_method, total_amount, notes)
+INSERT INTO orders (customer_id, created_at, status, payment_method, total_amount, notes)
 VALUES
     (
         (SELECT id FROM users WHERE username = 'customer1'),
-        (SELECT r.id FROM reservations r
-                              JOIN users u ON r.customer_id = u.id
-         WHERE u.username = 'customer1'
-           AND r.reservation_date = '2025-01-01'),
         '2025-01-01 19:30:00',
         'CREATED',
         'IN_LOCO',
@@ -180,10 +176,6 @@ VALUES
     ),
     (
         (SELECT id FROM users WHERE username = 'customer1'),
-        (SELECT r.id FROM reservations r
-                              JOIN users u ON r.customer_id = u.id
-         WHERE u.username = 'customer1'
-           AND r.reservation_date = '2025-01-02'),
         '2025-01-02 21:15:00',
         'RETIRED',
         'ONLINE',

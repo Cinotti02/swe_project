@@ -1,8 +1,10 @@
 package CLI;
 
 import Controller.StaffController;
-import DomainModel.user.User;
 import DomainModel.order.OrderStatus;
+import DomainModel.order.PaymentMethod;
+import DomainModel.reservation.ReservationStatus;
+import DomainModel.user.User;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
@@ -27,22 +29,26 @@ public class StaffCLI {
             System.out.println("== Asporto ==");
             System.out.println("1) Vedi coda cucina");
             System.out.println("2) Aggiorna stato ordine");
+            System.out.println("3) Cerca ordini");
             System.out.println("");
             System.out.println("== Prenotazioni ==");
-            System.out.println("3) Prenotazioni per data");
-            System.out.println("4) Conferma prenotazione");
-            System.out.println("5) Check-in prenotazione");
-            System.out.println("6) Segna no-show");
+            System.out.println("4) Prenotazioni per data");
+            System.out.println("5) Conferma prenotazione");
+            System.out.println("6) Check-in prenotazione");
+            System.out.println("7) Segna no-show");
+            System.out.println("8) Cerca prenotazioni");
             System.out.println("0) Logout");
             System.out.print("Scelta: ");
             String choice = scanner.nextLine().trim();
             switch (choice) {
                 case "1" -> staffController.showKitchenQueue();
                 case "2" -> handleOrderUpdate();
-                case "3" -> handleReservationList();
-                case "4" -> handleReservationAction(Action.CONFIRM);
-                case "5" -> handleReservationAction(Action.CHECK_IN);
-                case "6" -> handleReservationAction(Action.NO_SHOW);
+                case "3" -> handleSearchOrders();
+                case "4" -> handleReservationList();
+                case "5" -> handleReservationAction(Action.CONFIRM);
+                case "6" -> handleReservationAction(Action.CHECK_IN);
+                case "7" -> handleReservationAction(Action.NO_SHOW);
+                case "8" -> handleSearchReservations();
                 case "0" -> {
                     System.out.println("Logout effettuato.\n");
                     return;
@@ -50,7 +56,9 @@ public class StaffCLI {
                 default -> System.out.println("Scelta non valida.\n");
             }
         }
-    }private void handleOrderUpdate() {
+    }
+
+    private void handleOrderUpdate() {
         Integer orderId = readInt("ID ordine: ");
         if (orderId == null) return;
 
@@ -81,8 +89,6 @@ public class StaffCLI {
         };
     }
 
-
-
     private void handleReservationList() {
         LocalDate date = readDate("Data (YYYY-MM-DD): ");
         if (date == null) return;
@@ -97,6 +103,32 @@ public class StaffCLI {
             case CHECK_IN -> staffController.registerCheckIn(reservationId);
             case NO_SHOW -> staffController.markNoShow(reservationId);
         }
+    }
+
+    private void handleSearchOrders() {
+        System.out.println("=== Ricerca ordini ===");
+        Integer customerId = readOptionalInt("Customer ID (invio per tutti): ");
+        OrderStatus status = readOptionalOrderStatus();
+        PaymentMethod paymentMethod = readOptionalPaymentMethod();
+        Integer categoryId = readOptionalInt("Categoria piatto (ID, invio per tutte): ");
+        LocalDate startDate = readOptionalDate("Data inizio creazione YYYY-MM-DD (invio per saltare): ");
+        LocalDate endDate = readOptionalDate("Data fine creazione YYYY-MM-DD (invio per saltare): ");
+
+        staffController.searchOrders(customerId, status, paymentMethod, categoryId, startDate, endDate);
+    }
+
+    private void handleSearchReservations() {
+        System.out.println("=== Ricerca prenotazioni ===");
+        LocalDate exactDate = readOptionalDate("Data precisa YYYY-MM-DD (invio per saltare): ");
+        LocalDate startDate = readOptionalDate("Data inizio YYYY-MM-DD (invio per saltare): ");
+        LocalDate endDate = readOptionalDate("Data fine YYYY-MM-DD (invio per saltare): ");
+        Integer customerId = readOptionalInt("Customer ID (invio per tutti): ");
+        Integer slotId = readOptionalInt("Slot ID (invio per tutti): ");
+        Integer minGuests = readOptionalInt("Ospiti minimi (invio per saltare): ");
+        Integer maxGuests = readOptionalInt("Ospiti massimi (invio per saltare): ");
+        ReservationStatus status = readOptionalReservationStatus();
+
+        staffController.searchReservations(exactDate, startDate, endDate, customerId, slotId, minGuests, maxGuests, status);
     }
 
     private Integer readInt(String prompt) {
@@ -114,6 +146,18 @@ public class StaffCLI {
         }
     }
 
+    private Integer readOptionalInt(String prompt) {
+        System.out.print(prompt);
+        String raw = scanner.nextLine().trim();
+        if (raw.isBlank()) return null;
+        try {
+            return Integer.parseInt(raw);
+        } catch (NumberFormatException e) {
+            System.out.println("Numero non valido, filtro ignorato.");
+            return null;
+        }
+    }
+
     private LocalDate readDate(String prompt) {
         System.out.print(prompt);
         String raw = scanner.nextLine().trim();
@@ -125,6 +169,54 @@ public class StaffCLI {
             return LocalDate.parse(raw);
         } catch (DateTimeParseException e) {
             System.out.println("Formato data non valido\n");
+            return null;
+        }
+    }
+
+    private LocalDate readOptionalDate(String prompt) {
+        System.out.print(prompt);
+        String raw = scanner.nextLine().trim();
+        if (raw.isBlank()) return null;
+        try {
+            return LocalDate.parse(raw);
+        } catch (DateTimeParseException e) {
+            System.out.println("Data non valida, filtro ignorato.");
+            return null;
+        }
+    }
+
+    private OrderStatus readOptionalOrderStatus() {
+        System.out.print("Stato ordine [CREATED,PREPARING,READY,RETIRED,CANCELLED] (invio per tutti): ");
+        String raw = scanner.nextLine().trim();
+        if (raw.isBlank()) return null;
+        try {
+            return OrderStatus.valueOf(raw.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            System.out.println("Stato non valido, filtro ignorato.");
+            return null;
+        }
+    }
+
+    private PaymentMethod readOptionalPaymentMethod() {
+        System.out.print("Metodo pagamento [ONLINE,IN_LOCO] (invio per tutti): ");
+        String raw = scanner.nextLine().trim();
+        if (raw.isBlank()) return null;
+        try {
+            return PaymentMethod.valueOf(raw.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            System.out.println("Metodo non valido, filtro ignorato.");
+            return null;
+        }
+    }
+
+    private ReservationStatus readOptionalReservationStatus() {
+        System.out.print("Stato prenotazione [CREATED,CONFIRMED,CHECKED_IN,COMPLETED,NO_SHOW,CANCELED] (invio per tutti): ");
+        String raw = scanner.nextLine().trim();
+        if (raw.isBlank()) return null;
+        try {
+            return ReservationStatus.valueOf(raw.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            System.out.println("Stato non valido, filtro ignorato.");
             return null;
         }
     }

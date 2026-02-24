@@ -5,6 +5,7 @@ import DomainModel.reservation.Reservation;
 import DomainModel.reservation.ReservationStatus;
 import DomainModel.reservation.Slot;
 import DomainModel.reservation.Table;
+import DomainModel.search.ReservationSearchParameters;
 import DomainModel.user.User;
 
 import java.sql.*;
@@ -130,6 +131,83 @@ public class ReservationDAO extends BaseDAO {
                 }
             }
         }
+        return reservations;
+    }
+
+    public List<Reservation> searchReservations(ReservationSearchParameters params) throws SQLException {
+        ReservationSearchParameters criteria = (params != null) ? params : ReservationSearchParameters.builder();
+
+        StringBuilder where = new StringBuilder("WHERE 1=1");
+        List<Object> bindValues = new ArrayList<>();
+
+        criteria.getDate().ifPresent(date -> {
+            where.append(" AND r.reservation_date = ?");
+            bindValues.add(Date.valueOf(date));
+        });
+
+        criteria.getStartDate().ifPresent(startDate -> {
+            where.append(" AND r.reservation_date >= ?");
+            bindValues.add(Date.valueOf(startDate));
+        });
+
+        criteria.getEndDate().ifPresent(endDate -> {
+            where.append(" AND r.reservation_date <= ?");
+            bindValues.add(Date.valueOf(endDate));
+        });
+
+        criteria.getCustomerId().ifPresent(customerId -> {
+            where.append(" AND r.customer_id = ?");
+            bindValues.add(customerId);
+        });
+
+        criteria.getSlotId().ifPresent(slotId -> {
+            where.append(" AND r.slot_id = ?");
+            bindValues.add(slotId);
+        });
+
+        criteria.getMinGuests().ifPresent(minGuests -> {
+            where.append(" AND r.guests >= ?");
+            bindValues.add(minGuests);
+        });
+
+        criteria.getMaxGuests().ifPresent(maxGuests -> {
+            where.append(" AND r.guests <= ?");
+            bindValues.add(maxGuests);
+        });
+
+        criteria.getStatus().ifPresent(status -> {
+            where.append(" AND r.status = ?");
+            bindValues.add(status.name());
+        });
+
+        where.append(" ORDER BY r.reservation_date, s.start_time");
+
+        String sql = baseReservationSelect(where.toString());
+        List<Reservation> reservations = new ArrayList<>();
+
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            int idx = 1;
+            for (Object bindValue : bindValues) {
+                if (bindValue instanceof Integer v) {
+                    ps.setInt(idx++, v);
+                } else if (bindValue instanceof String v) {
+                    ps.setString(idx++, v);
+                } else if (bindValue instanceof Date v) {
+                    ps.setDate(idx++, v);
+                } else {
+                    ps.setObject(idx++, bindValue);
+                }
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    reservations.add(mapRowToReservation(rs));
+                }
+            }
+        }
+
         return reservations;
     }
 

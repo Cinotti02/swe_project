@@ -67,15 +67,13 @@ CREATE TABLE reservations (
 CREATE TABLE orders (
                         id SERIAL PRIMARY KEY,
                         customer_id    INT         NOT NULL,
-                        reservation_id INT,
                         created_at     TIMESTAMP   NOT NULL DEFAULT NOW(),
                         status         VARCHAR(20) NOT NULL CHECK (status IN ('CREATED', 'PREPARING', 'READY', 'RETIRED', 'CANCELLED')),
                         payment_method VARCHAR(20) NOT NULL CHECK (payment_method IN ('ONLINE', 'IN_LOCO')),
                         total_amount   NUMERIC(10,2) NOT NULL CHECK (total_amount >= 0),
                         notes          TEXT,
 
-                        FOREIGN KEY (customer_id)    REFERENCES users(id),
-                        FOREIGN KEY (reservation_id) REFERENCES reservations(id)
+                        FOREIGN KEY (customer_id)    REFERENCES users(id)
 );
 
 -- 8) ORDER ITEMS

@@ -7,6 +7,7 @@ import DomainModel.reservation.Reservation;
 import DomainModel.reservation.ReservationStatus;
 import DomainModel.reservation.Slot;
 import DomainModel.reservation.Table;
+import DomainModel.search.ReservationSearchParameters;
 import DomainModel.user.User;
 import ORM.NotificationDAO;
 import ORM.ReservationDAO;
@@ -102,6 +103,11 @@ public class ReservationService {
     public List<Reservation> listReservationsByDate(LocalDate date) throws SQLException {
         return reservationDAO.getReservationsByDate(date);
     }
+
+    public List<Reservation> searchReservations(ReservationSearchParameters params) throws SQLException {
+        return reservationDAO.searchReservations(params);
+    }
+
 
     public void cancelReservation(int reservationId, User requester) throws SQLException {
         Reservation reservation = getReservation(reservationId);

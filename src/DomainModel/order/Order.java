@@ -1,6 +1,5 @@
 package DomainModel.order;
 
-import DomainModel.reservation.Reservation;
 import DomainModel.user.User;
 import DomainModel.valueObject.Money;
 
@@ -10,24 +9,21 @@ public class Order {
 
     private int id;
     private User customer;
-    private Reservation reservation;       // opzionale: ordine legato a una prenotazione
     private LocalDateTime createdAt;       // data/ora creazione
     private OrderStatus status;            // CREATED, PREPARING, READY, RETIRED, CANCELLED
     private PaymentMethod paymentMethod;   // ONLINE, INLOCO
-    private Money totalAmount;        // totale dell'ordine
+    private Money totalAmount;             // totale dell'ordine
     private String notes;                  // note dell'ordine (es. "senza glutine")
 
     public Order() {}
 
     public Order(User customer,
-                 Reservation reservation,
                  PaymentMethod paymentMethod,
                  Money totalAmount,
                  String notes) {
         this.createdAt = LocalDateTime.now();
         this.status = OrderStatus.CREATED;
         this.customer = customer;
-        this.reservation = reservation;
         this.paymentMethod = paymentMethod;
         this.totalAmount = (totalAmount != null) ? totalAmount : new Money(0.0);
         this.notes = notes;
@@ -35,12 +31,11 @@ public class Order {
 
     // Overload comodo se vuoi passare il totale come double
     public Order(User customer,
-                 Reservation reservation,
                  PaymentMethod paymentMethod,
                  double totalAmount,
                  String notes) {
 
-        this(customer, reservation, paymentMethod, new Money(totalAmount), notes);
+        this(customer, paymentMethod, new Money(totalAmount), notes);
     }
 
 
@@ -62,14 +57,6 @@ public class Order {
 
     public void setCustomer(User customer) {
         this.customer = customer;
-    }
-
-    public Reservation getReservation() {
-        return reservation;
-    }
-
-    public void setReservation(Reservation reservation) {
-        this.reservation = reservation;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -104,6 +91,7 @@ public class Order {
         this.totalAmount = totalAmount;
     }
 
+    //fixme: se vuoi un overload comodo per settare il totale con un double, puoi aggiungere questo metodo:
     public void setTotalAmount(double amount) {
         this.totalAmount = new Money(amount);
     }

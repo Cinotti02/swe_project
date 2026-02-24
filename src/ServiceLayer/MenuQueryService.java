@@ -2,6 +2,7 @@ package ServiceLayer;
 
 import DomainModel.menu.Category;
 import DomainModel.menu.Dish;
+import DomainModel.search.DishSearchParameters;
 import ORM.CategoryDAO;
 import ORM.DishDAO;
 
@@ -74,11 +75,13 @@ public class MenuQueryService {
             return List.of();
         }
 
-        String normalized = query.trim().toLowerCase();
-        return dishDAO.getAllDishes().stream()
-                .filter(d -> d.getName().toLowerCase().contains(normalized)
-                        || (d.getDescription() != null && d.getDescription().toLowerCase().contains(normalized)))
-                .filter(d -> !onlyAvailable || d.isAvailable())
-                .collect(Collectors.toList());
+        DishSearchParameters params = DishSearchParameters.builder()
+                .setNameContains(query)
+                .setOnlyAvailable(onlyAvailable);
+        return dishDAO.searchDishes(params);
+    }
+
+    public List<Dish> searchDishes(DishSearchParameters params) throws SQLException {
+        return dishDAO.searchDishes(params);
     }
 }

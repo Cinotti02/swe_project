@@ -3,7 +3,7 @@ package ORM;
 import DomainModel.order.Order;
 import DomainModel.order.OrderStatus;
 import DomainModel.order.PaymentMethod;
-import DomainModel.reservation.Reservation;
+import DomainModel.search.OrderSearchParameters;
 import DomainModel.user.User;
 import DomainModel.valueObject.Money;
 
@@ -19,25 +19,19 @@ public class OrderDAO extends BaseDAO {
     // ------------------------------------------------------------
     public void addOrder(Order order) throws SQLException {
         String sql = """
-                INSERT INTO orders(customer_id, reservation_id, created_at, status, payment_method, total_amount, notes)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO orders(customer_id, created_at, status, payment_method, total_amount, notes)
+                VALUES (?, ?, ?, ?, ?, ?)
                 """;
 
         try (Connection conn = DBConnection.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)){
 
             ps.setInt(1, order.getCustomer().getId());
-
-            if (order.getReservation() != null)
-                ps.setInt(2, order.getReservation().getId());
-            else
-                ps.setNull(2, Types.INTEGER);
-
-            ps.setTimestamp(3, Timestamp.valueOf(order.getCreatedAt()));
-            ps.setString(4, order.getStatus().name());
-            ps.setString(5, order.getPaymentMethod().name());
-            ps.setBigDecimal(6, order.getTotalAmount().getAmount());
-            ps.setString(7, order.getNotes());
+            ps.setTimestamp(2, Timestamp.valueOf(order.getCreatedAt()));
+            ps.setString(3, order.getStatus().name());
+            ps.setString(4, order.getPaymentMethod().name());
+            ps.setBigDecimal(5, order.getTotalAmount().getAmount());
+            ps.setString(6, order.getNotes());
 
             ps.executeUpdate();
 
@@ -98,7 +92,7 @@ public class OrderDAO extends BaseDAO {
     // ------------------------------------------------------------
     public Optional<Order> getOrderById(int orderId) throws SQLException {
         String sql = """
-                SELECT id, customer_id, reservation_id, created_at, status, payment_method, total_amount, notes
+                SELECT id, customer_id, created_at, status, payment_method, total_amount, notes
                 FROM orders WHERE id = ?
                 """;
 
@@ -121,7 +115,7 @@ public class OrderDAO extends BaseDAO {
     // ------------------------------------------------------------
     public List<Order> getOrdersByCustomer(int customerId) throws SQLException {
         String sql = """
-                SELECT id, customer_id, reservation_id, created_at, status, payment_method, total_amount, notes
+                SELECT id, customer_id, created_at, status, payment_method, total_amount, notes
                 FROM orders WHERE customer_id = ?
                 ORDER BY created_at DESC
                 """;
@@ -147,7 +141,7 @@ public class OrderDAO extends BaseDAO {
     // ------------------------------------------------------------
     public List<Order> getOrdersByStatus(OrderStatus status) throws SQLException {
         String sql = """
-                SELECT id, customer_id, reservation_id, created_at, status, payment_method, total_amount, notes
+                SELECT id, customer_id, created_at, status, payment_method, total_amount, notes
                 FROM orders WHERE status = ?
                 """;
 
@@ -167,6 +161,103 @@ public class OrderDAO extends BaseDAO {
         return list;
     }
 
+
+    // ------------------------------------------------------------
+    // Ricerca ordini con filtri dinamici
+    // ------------------------------------------------------------
+    public List<Order> searchOrders(OrderSearchParameters params) throws SQLException {
+        OrderSearchParameters criteria = (params != null) ? params : OrderSearchParameters.builder();
+
+        StringBuilder sql = new StringBuilder("""
+                SELECT DISTINCT o.id, o.customer_id, o.created_at,
+                                o.status, o.payment_method, o.total_amount, o.notes
+                FROM orders o
+                """);
+
+        List<Object> bindValues = new ArrayList<>();
+
+        if (criteria.getCategoryId().isPresent()) {
+            sql.append("""
+                    JOIN order_items oi ON oi.order_id = o.id
+                    JOIN dishes d ON d.id = oi.dish_id
+                    """);
+        }
+
+        sql.append(" WHERE 1=1");
+
+        criteria.getCustomerId().ifPresent(customerId -> {
+            sql.append(" AND o.customer_id = ?");
+            bindValues.add(customerId);
+        });
+
+        criteria.getStatus().ifPresent(status -> {
+            sql.append(" AND o.status = ?");
+            bindValues.add(status.name());
+        });
+
+        criteria.getPaymentMethod().ifPresent(paymentMethod -> {
+            sql.append(" AND o.payment_method = ?");
+            bindValues.add(paymentMethod.name());
+        });
+
+        criteria.getCategoryId().ifPresent(categoryId -> {
+            sql.append(" AND d.category_id = ?");
+            bindValues.add(categoryId);
+        });
+
+        criteria.getStartDate().ifPresent(startDate -> {
+            sql.append(" AND o.created_at >= ?");
+            bindValues.add(Timestamp.valueOf(startDate.atStartOfDay()));
+        });
+
+        criteria.getEndDate().ifPresent(endDate -> {
+            sql.append(" AND o.created_at < ?");
+            bindValues.add(Timestamp.valueOf(endDate.plusDays(1).atStartOfDay()));
+        });
+
+        criteria.getMinTotalAmount().ifPresent(minTotal -> {
+            sql.append(" AND o.total_amount >= ?");
+            bindValues.add(minTotal);
+        });
+
+        criteria.getMaxTotalAmount().ifPresent(maxTotal -> {
+            sql.append(" AND o.total_amount <= ?");
+            bindValues.add(maxTotal);
+        });
+
+        sql.append(" ORDER BY o.created_at DESC");
+
+        List<Order> list = new ArrayList<>();
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+
+            int idx = 1;
+            for (Object bindValue : bindValues) {
+                if (bindValue instanceof Integer v) {
+                    ps.setInt(idx++, v);
+                } else if (bindValue instanceof String v) {
+                    ps.setString(idx++, v);
+                } else if (bindValue instanceof Timestamp v) {
+                    ps.setTimestamp(idx++, v);
+                } else if (bindValue instanceof java.math.BigDecimal v) {
+                    ps.setBigDecimal(idx++, v);
+                } else {
+                    ps.setObject(idx++, bindValue);
+                }
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapRowToOrder(rs));
+                }
+            }
+        }
+
+        return list;
+    }
+
+
     // ------------------------------------------------------------
     // Mapping ResultSet → DomainModel.Order
     // ------------------------------------------------------------
@@ -180,14 +271,6 @@ public class OrderDAO extends BaseDAO {
         User customer = new User();
         customer.setId(rs.getInt("customer_id"));
         order.setCustomer(customer);
-
-        // Reservation opzionale
-        int resId = rs.getInt("reservation_id");
-        if (!rs.wasNull()) {
-            Reservation r = new Reservation();
-            r.setId(resId);
-            order.setReservation(r);
-        }
 
         order.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
         order.setStatus(OrderStatus.valueOf(rs.getString("status")));

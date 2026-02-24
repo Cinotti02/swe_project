@@ -1,8 +1,13 @@
 package CLI;
 
 import Controller.OwnerController;
+import DomainModel.order.OrderStatus;
+import DomainModel.order.PaymentMethod;
+import DomainModel.reservation.ReservationStatus;
 import DomainModel.user.User;
+
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 import java.util.Scanner;
@@ -29,6 +34,9 @@ public class OwnerCLI {
             System.out.println("7) Aggiungi tavolo");
             System.out.println("8) Lista slot");
             System.out.println("9) Aggiungi slot");
+            System.out.println("10) Cerca piatti");
+            System.out.println("11) Cerca ordini");
+            System.out.println("12) Cerca prenotazioni");
             System.out.println("0) Logout");
             System.out.print("Scelta: ");
             String choice = scanner.nextLine().trim();
@@ -42,6 +50,9 @@ public class OwnerCLI {
                 case "7" -> handleAddTable();
                 case "8" -> handleListSlots();
                 case "9" -> handleAddSlot();
+                case "10" -> handleSearchDishes();
+                case "11" -> handleSearchOrders();
+                case "12" -> handleSearchReservations();
                 case "0" -> {
                     System.out.println("Logout effettuato.\n");
                     return;
@@ -119,6 +130,45 @@ public class OwnerCLI {
         ownerController.configureSlot(start, end);
     }
 
+    private void handleSearchDishes() {
+        System.out.println("=== Ricerca piatti ===");
+        System.out.print("Nome contiene (invio per saltare): ");
+        String name = scanner.nextLine().trim();
+        Integer categoryId = readOptionalInt("ID categoria (invio per tutti): ");
+        Boolean onlyAvailable = readOptionalYesNo("Solo disponibili? (s/n, invio=tutti): ");
+        BigDecimal minPrice = readOptionalBigDecimal("Prezzo minimo (invio per saltare): ");
+        BigDecimal maxPrice = readOptionalBigDecimal("Prezzo massimo (invio per saltare): ");
+
+        ownerController.searchDishes(name.isBlank() ? null : name, categoryId, onlyAvailable, minPrice, maxPrice);
+    }
+
+    private void handleSearchOrders() {
+        System.out.println("=== Ricerca ordini ===");
+        Integer customerId = readOptionalInt("Customer ID (invio per tutti): ");
+        OrderStatus status = readOptionalOrderStatus();
+        PaymentMethod paymentMethod = readOptionalPaymentMethod();
+        Integer categoryId = readOptionalInt("Categoria piatto (ID, invio per tutte): ");
+        LocalDate startDate = readOptionalDate("Data inizio creazione YYYY-MM-DD (invio per saltare): ");
+        LocalDate endDate = readOptionalDate("Data fine creazione YYYY-MM-DD (invio per saltare): ");
+
+        ownerController.searchOrders(customerId, status, paymentMethod, categoryId, startDate, endDate);
+    }
+
+    private void handleSearchReservations() {
+        System.out.println("=== Ricerca prenotazioni ===");
+        LocalDate exactDate = readOptionalDate("Data precisa YYYY-MM-DD (invio per saltare): ");
+        LocalDate startDate = readOptionalDate("Data inizio YYYY-MM-DD (invio per saltare): ");
+        LocalDate endDate = readOptionalDate("Data fine YYYY-MM-DD (invio per saltare): ");
+        Integer customerId = readOptionalInt("Customer ID (invio per tutti): ");
+        Integer slotId = readOptionalInt("Slot ID (invio per tutti): ");
+        Integer minGuests = readOptionalInt("Ospiti minimi (invio per saltare): ");
+        Integer maxGuests = readOptionalInt("Ospiti massimi (invio per saltare): ");
+        ReservationStatus status = readOptionalReservationStatus();
+
+        ownerController.searchReservations(exactDate, startDate, endDate, customerId, slotId, minGuests, maxGuests, status);
+    }
+
+
     private Integer readInt(String prompt) {
         System.out.print(prompt);
         String raw = scanner.nextLine().trim();
@@ -130,6 +180,20 @@ public class OwnerCLI {
             return Integer.parseInt(raw);
         } catch (NumberFormatException e) {
             System.out.println("Inserire un numero valido\n");
+            return null;
+        }
+    }
+
+    private Integer readOptionalInt(String prompt) {
+        System.out.print(prompt);
+        String raw = scanner.nextLine().trim();
+        if (raw.isBlank()) {
+            return null;
+        }
+        try {
+            return Integer.parseInt(raw);
+        } catch (NumberFormatException e) {
+            System.out.println("Numero non valido, filtro ignorato.");
             return null;
         }
     }
@@ -149,10 +213,36 @@ public class OwnerCLI {
         }
     }
 
+    private BigDecimal readOptionalBigDecimal(String prompt) {
+        System.out.print(prompt);
+        String raw = scanner.nextLine().trim();
+        if (raw.isBlank()) {
+            return null;
+        }
+        try {
+            return new BigDecimal(raw);
+        } catch (NumberFormatException e) {
+            System.out.println("Numero non valido, filtro ignorato.");
+            return null;
+        }
+    }
+
     private boolean readYesNo(String prompt) {
         System.out.print(prompt);
         String raw = scanner.nextLine().trim().toLowerCase();
         return raw.startsWith("s");
+    }
+
+    private Boolean readOptionalYesNo(String prompt) {
+        System.out.print(prompt);
+        String raw = scanner.nextLine().trim().toLowerCase();
+        if (raw.isBlank()) {
+            return null;
+        }
+        if (raw.startsWith("s")) return true;
+        if (raw.startsWith("n")) return false;
+        System.out.println("Valore non valido, filtro ignorato.");
+        return null;
     }
 
     private LocalTime readTime(String prompt) {
@@ -166,6 +256,56 @@ public class OwnerCLI {
             return LocalTime.parse(raw);
         } catch (DateTimeParseException e) {
             System.out.println("Formato orario non valido\n");
+            return null;
+        }
+    }
+
+    private LocalDate readOptionalDate(String prompt) {
+        System.out.print(prompt);
+        String raw = scanner.nextLine().trim();
+        if (raw.isBlank()) {
+            return null;
+        }
+        try {
+            return LocalDate.parse(raw);
+        } catch (DateTimeParseException e) {
+            System.out.println("Data non valida, filtro ignorato.");
+            return null;
+        }
+    }
+
+    private OrderStatus readOptionalOrderStatus() {
+        System.out.print("Stato ordine [CREATED,PREPARING,READY,RETIRED,CANCELLED] (invio per tutti): ");
+        String raw = scanner.nextLine().trim();
+        if (raw.isBlank()) return null;
+        try {
+            return OrderStatus.valueOf(raw.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            System.out.println("Stato non valido, filtro ignorato.");
+            return null;
+        }
+    }
+
+    private PaymentMethod readOptionalPaymentMethod() {
+        System.out.print("Metodo pagamento [ONLINE,IN_LOCO] (invio per tutti): ");
+        String raw = scanner.nextLine().trim();
+        if (raw.isBlank()) return null;
+        try {
+            return PaymentMethod.valueOf(raw.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            System.out.println("Metodo non valido, filtro ignorato.");
+            return null;
+        }
+    }
+
+    private ReservationStatus readOptionalReservationStatus() {
+        System.out.print("Stato prenotazione [CREATED,CONFIRMED,CHECKED_IN,COMPLETED,NO_SHOW,CANCELED] (invio per tutti): ");
+        String raw = scanner.nextLine().trim();
+        if (raw.isBlank()) return null;
+        try {
+            return ReservationStatus.valueOf(raw.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            System.out.println("Stato non valido, filtro ignorato.");
             return null;
         }
     }

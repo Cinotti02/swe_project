@@ -44,6 +44,7 @@ public final class AppBootstrap {
         OwnerAdminService ownerAdminService = new OwnerAdminService(dishDAO, categoryDAO, tableDAO, slotDAO);
         ProfileService profileService = new ProfileService(userDAO);
         StaffOperationService staffOperationService = new StaffOperationService(orderDAO, reservationService, notificationDAO);
+        SearchService searchService = new SearchService(menuQueryService, orderService, reservationService);
 
         CustomerController customerController = new CustomerController(
                 menuQueryService,
@@ -51,8 +52,8 @@ public final class AppBootstrap {
                 orderService,
                 reservationService);
         CustomerProfileController customerProfileController = new CustomerProfileController(profileService);
-        OwnerController ownerController = new OwnerController(ownerAdminService, menuQueryService);
-        StaffController staffController = new StaffController(staffOperationService);
+        OwnerController ownerController = new OwnerController(ownerAdminService, menuQueryService, searchService);
+        StaffController staffController = new StaffController(staffOperationService, searchService);
 
         AuthCLI authCLI = new AuthCLI(authController, scanner);
         CustomerCLI customerCLI = new CustomerCLI(customerController, customerProfileController, scanner);

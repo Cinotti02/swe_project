@@ -2,6 +2,7 @@ package ORM;
 
 import DomainModel.menu.Category;
 import DomainModel.menu.Dish;
+import DomainModel.search.DishSearchParameters;
 import DomainModel.valueObject.Money;
 
 import java.sql.*;
@@ -113,6 +114,79 @@ public class DishDAO extends BaseDAO{
         }
         return list;
     }
+
+    // -------------------------------------------------------
+    // READ - dynamic search
+    // -------------------------------------------------------
+    public List<Dish> searchDishes(DishSearchParameters params) throws SQLException {
+        DishSearchParameters criteria = (params != null) ? params : DishSearchParameters.builder();
+
+        StringBuilder sql = new StringBuilder("""
+                SELECT id, name, description, price, active, category_id
+                FROM dishes
+                WHERE 1=1
+                """);
+        List<Object> bindValues = new ArrayList<>();
+
+        criteria.getCategoryId().ifPresent(categoryId -> {
+            sql.append(" AND category_id = ?");
+            bindValues.add(categoryId);
+        });
+
+        criteria.getOnlyAvailable().ifPresent(onlyAvailable -> {
+            if (onlyAvailable) {
+                sql.append(" AND active = TRUE");
+            }
+        });
+
+        criteria.getMinPrice().ifPresent(minPrice -> {
+            sql.append(" AND price >= ?");
+            bindValues.add(minPrice);
+        });
+
+        criteria.getMaxPrice().ifPresent(maxPrice -> {
+            sql.append(" AND price <= ?");
+            bindValues.add(maxPrice);
+        });
+
+        criteria.getNameContains()
+                .map(String::trim)
+                .filter(name -> !name.isEmpty())
+                .ifPresent(name -> {
+                    sql.append(" AND LOWER(name) LIKE ?");
+                    bindValues.add("%" + name.toLowerCase() + "%");
+                });
+
+        sql.append(" ORDER BY name");
+
+        List<Dish> list = new ArrayList<>();
+
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+
+            int idx = 1;
+            for (Object bindValue : bindValues) {
+                if (bindValue instanceof Integer v) {
+                    ps.setInt(idx++, v);
+                } else if (bindValue instanceof java.math.BigDecimal v) {
+                    ps.setBigDecimal(idx++, v);
+                } else if (bindValue instanceof String v) {
+                    ps.setString(idx++, v);
+                } else {
+                    ps.setObject(idx++, bindValue);
+                }
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapRowToDish(rs));
+                }
+            }
+        }
+
+        return list;
+    }
+
 
     // -------------------------------------------------------
     // UPDATE

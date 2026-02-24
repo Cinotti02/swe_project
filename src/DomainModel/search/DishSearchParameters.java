@@ -10,31 +10,34 @@ public class DishSearchParameters {
     private BigDecimal maxPrice;
     private String nameContains;
 
+    private DishSearchParameters() {
+    }
+
     public static DishSearchParameters builder() {
         return new DishSearchParameters();
     }
 
-    public DishSearchParameters getIdCategory(Integer categoryId) {
+    public DishSearchParameters setCategoryId(Integer categoryId) {
         this.categoryId = categoryId;
         return this;
     }
 
-    public DishSearchParameters getOnlyAvailable(Boolean onlyAvailable) {
+    public DishSearchParameters setOnlyAvailable(Boolean onlyAvailable) {
         this.onlyAvailable = onlyAvailable;
         return this;
     }
 
-    public DishSearchParameters getMinPrice(BigDecimal minPrice) {
+    public DishSearchParameters setMinPrice(BigDecimal minPrice) {
         this.minPrice = minPrice;
         return this;
     }
 
-    public DishSearchParameters getMaxPrice(BigDecimal maxPrice) {
+    public DishSearchParameters setMaxPrice(BigDecimal maxPrice) {
         this.maxPrice = maxPrice;
         return this;
     }
 
-    public DishSearchParameters getNameContains(String nameContains) {
+    public DishSearchParameters setNameContains(String nameContains) {
         this.nameContains = nameContains;
         return this;
     }
