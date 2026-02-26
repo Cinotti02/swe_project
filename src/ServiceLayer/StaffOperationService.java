@@ -5,7 +5,6 @@ import DomainModel.notification.TypeNotification;
 import DomainModel.order.Order;
 import DomainModel.order.OrderStatus;
 import DomainModel.reservation.Reservation;
-import DomainModel.reservation.ReservationStatus;
 import ORM.NotificationDAO;
 import ORM.OrderDAO;
 
@@ -62,43 +61,11 @@ public class StaffOperationService {
                     "Transizione non valida: " + currentStatus + " -> " + newStatus
             );
         }
-
-        setOrderStatus(orderId, newStatus, messageForStatus(newStatus));
+        setOrderStatus(order, messageForStatus(newStatus));
     }
-
-    public void markOrderPreparing(int orderId) throws SQLException {
-        updateOrderStatus(orderId, OrderStatus.PREPARING);
-    }
-
-    public void markOrderReady(int orderId) throws SQLException {
-        updateOrderStatus(orderId, OrderStatus.READY);
-    }
-
-    public void markOrderRetired(int orderId) throws SQLException {
-        updateOrderStatus(orderId, OrderStatus.RETIRED);
-    }
-
-    public void cancelOrder(int orderId) throws SQLException {
-        updateOrderStatus(orderId, OrderStatus.CANCELLED);
-    }
-
 
     public Reservation getReservationById(int reservationId) throws SQLException {
         return reservationService.getReservation(reservationId);
-    }
-
-    public void updateReservationStatus(int reservationId, ReservationStatus newStatus) throws SQLException {
-        if (newStatus == null) {
-            throw new IllegalArgumentException("Reservation status is required");
-        }
-
-        switch (newStatus) {
-            case CONFIRMED -> reservationService.confirmReservation(reservationId);
-            case CHECKED_IN -> reservationService.checkInReservation(reservationId);
-            case COMPLETED -> reservationService.completeReservation(reservationId);
-            case NO_SHOW -> reservationService.markNoShow(reservationId);
-            default -> throw new IllegalArgumentException("Transizione non supportata verso " + newStatus + " per staff");
-        }
     }
 
     public List<Reservation> reservationsForDate(LocalDate date) throws SQLException {
@@ -127,10 +94,20 @@ public class StaffOperationService {
         };
     }
 
-    private void setOrderStatus(int orderId, OrderStatus newStatus, String message) throws SQLException {
-        orderDAO.updateStatus(orderId, newStatus);
-        notifyCustomer(orderId, message,
-                newStatus == OrderStatus.READY ? TypeNotification.ALERT : TypeNotification.UPDATE);
+    private void setOrderStatus(Order order, String message) throws SQLException {
+        orderDAO.updateStatus(order.getId(), order.getStatus());
+        notifyCustomer(order.getId(), message,
+                order.getStatus() == OrderStatus.READY ? TypeNotification.ALERT : TypeNotification.UPDATE);
+    }
+
+    private void applyOrderTransition(Order order, OrderStatus newStatus) {
+        switch (newStatus) {
+            case PREPARING -> order.markPreparing();
+            case READY -> order.markReady();
+            case RETIRED -> order.markRetired();
+            case CANCELLED -> order.cancel();
+            case CREATED -> throw new IllegalArgumentException("Cannot transition back to CREATED");
+        }
     }
 
     private void notifyCustomer(int orderId, String message, TypeNotification type) throws SQLException {

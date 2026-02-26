@@ -20,7 +20,7 @@ public class Table {
         this.number = number;
         this.seats = seats;
         this.joinable = joinable;
-        this.location = location;
+        setLocation(location);
         this.available = true; // di default il tavolo è disponibile
     }
 

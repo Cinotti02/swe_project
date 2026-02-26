@@ -15,22 +15,10 @@ public class Notification {
 
     public Notification() {}
 
-    public Notification(User recipient,
-                        String message,
-                        TypeNotification type) {
-
-        if (recipient == null)
-            throw new IllegalArgumentException("Recipient cannot be null");
-
-        if (message == null || message.isBlank())
-            throw new IllegalArgumentException("Message cannot be empty");
-
-        if (type == null)
-            throw new IllegalArgumentException("Notification type cannot be null");
-
-        this.recipient = recipient;
-        this.message = message;
-        this.type = type;
+    public Notification(User recipient, String message, TypeNotification type) {
+        setRecipient(recipient);
+        setMessage(message);
+        setType(type);
         this.status = StatusNotification.SENT;
         this.createdAt = LocalDateTime.now();
     }
@@ -50,6 +38,8 @@ public class Notification {
     }
 
     public void setRecipient(User recipient) {
+        if (recipient == null)
+            throw new IllegalArgumentException("Recipient cannot be null");
         this.recipient = recipient;
     }
 
@@ -58,6 +48,8 @@ public class Notification {
     }
 
     public void setMessage(String message) {
+        if (message == null || message.isBlank())
+            throw new IllegalArgumentException("Message cannot be empty");
         this.message = message;
     }
 
@@ -66,6 +58,8 @@ public class Notification {
     }
 
     public void setType(TypeNotification type) {
+        if (type == null)
+            throw new IllegalArgumentException("Notification type cannot be null");
         this.type = type;
     }
 
@@ -74,7 +68,13 @@ public class Notification {
     }
 
     public void setStatus(StatusNotification status) {
+        if (status == null)
+            throw new IllegalArgumentException("Notification status cannot be null");
         this.status = status;
+        if (status == StatusNotification.READ && this.readAt == null)
+            this.readAt = LocalDateTime.now();
+        if (status != StatusNotification.READ)
+            this.readAt = null;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -82,6 +82,8 @@ public class Notification {
     }
 
     public void setCreatedAt(LocalDateTime createdAt) {
+        if (createdAt == null)
+            throw new IllegalArgumentException("Created at cannot be null");
         this.createdAt = createdAt;
     }
 
@@ -91,18 +93,28 @@ public class Notification {
 
     public void setReadAt(LocalDateTime readAt) {
         this.readAt = readAt;
+        if (readAt != null)
+            setStatus(StatusNotification.READ);
+        else if (this.status == StatusNotification.READ)
+            this.status = StatusNotification.SENT;
     }
+
 // ----------------- Metodi di dominio -----------------
 
     public void markRead() {
-        if (!status.isRead()) {
+        if (status == null || !status.isRead()) {
             this.status = StatusNotification.READ;
             this.readAt = LocalDateTime.now();
         }
     }
 
+    public void markFailed() {
+        this.status = StatusNotification.FAILED;
+        this.readAt = null;
+    }
+
     public boolean isRead() {
-        return status.isRead();
+        return status != null && status.isRead();
     }
 
     @Override

@@ -48,7 +48,14 @@ public class OwnerAdminService {
     }
 
     public void toggleCategory(int categoryId, boolean active) throws SQLException {
-        categoryDAO.setCategoryActive(categoryId, active);
+        Category category = categoryDAO.getCategoryById(categoryId)
+                .orElseThrow(() -> new IllegalArgumentException("Category not found: " + categoryId));
+        if (active) {
+            category.activate();
+        } else {
+            category.deactivate();
+        }
+        categoryDAO.updateCategory(category);
     }
 
     public void deleteCategory(int categoryId) throws SQLException {
@@ -69,7 +76,11 @@ public class OwnerAdminService {
     public void changeDishAvailability(int dishId, boolean available) throws SQLException {
         Dish dish = dishDAO.getDishById(dishId)
                 .orElseThrow(() -> new IllegalArgumentException("Dish not found: " + dishId));
-        dish.setAvailable(available);
+        if (available) {
+            dish.markAvailable();
+        } else {
+            dish.markUnavailable();
+        }
         dishDAO.updateDish(dish);
     }
 

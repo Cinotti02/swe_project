@@ -28,6 +28,12 @@ public class TableAllocationService {
      * Ritorna true se la combinazione di tavoli può ospitare quel numero di ospiti.
      */
     public boolean canHost(List<Table> tables, int guests) {
+        if (tables == null || tables.isEmpty() || guests <= 0) {
+            return false;
+        }
+        if (tables.size() == 1) {
+            return tables.get(0).canFitAlone(guests);
+        }
         return effectiveSeats(tables) >= guests;
     }
 
@@ -37,13 +43,20 @@ public class TableAllocationService {
             return null; // controllo sul input > 0
         }
 
+        Table singleBest = available.stream()
+                .filter(Table::isAvailable)
+                .filter(table -> table.canFitAlone(guests))
+                .min((a, b) -> Integer.compare(a.getSeats(), b.getSeats()))
+                .orElse(null);
+
         // Filtra tavoli utilizzabili
         List<Table> joinableTables = available.stream()
                 .filter(Table::isAvailable)
                 .filter(Table::isJoinable)
                 .toList();
 
-        List<Table> best = null;
+        List<Table> best = singleBest != null ? List.of(singleBest) : null;
+
         int bestWaste = Integer.MAX_VALUE;
 
         int n = joinableTables.size();

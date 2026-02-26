@@ -147,16 +147,17 @@ public class ReservationService {
                 TypeNotification.ALERT);
     }
 
-    private void changeStatus(int reservationId,
-                              ReservationStatus nextStatus,
-                              String message,
-                              TypeNotification type) throws SQLException {
+    private void changeStatus(int reservationId, ReservationStatus nextStatus, String message, TypeNotification type) throws SQLException {
         Reservation reservation = getReservation(reservationId);
-        if (!reservation.getStatus().canTransitionTo(nextStatus)) {
-            throw new IllegalStateException("Invalid state transition to " + nextStatus);
+        switch (nextStatus) {
+            case CONFIRMED -> reservation.confirm();
+            case CHECKED_IN -> reservation.checkIn();
+            case COMPLETED -> reservation.complete();
+            case NO_SHOW -> reservation.markNoShow();
+            case CANCELED -> reservation.cancel();
+            default -> throw new IllegalArgumentException("Unsupported reservation transition: " + nextStatus);
         }
-        reservation.setStatus(nextStatus);
-        reservationDAO.updateStatus(reservationId, nextStatus);
+        reservationDAO.updateStatus(reservationId, reservation.getStatus());
         notifyCustomer(reservation, message, type);
     }
 

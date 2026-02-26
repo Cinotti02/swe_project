@@ -17,15 +17,12 @@ public class Order {
 
     public Order() {}
 
-    public Order(User customer,
-                 PaymentMethod paymentMethod,
-                 Money totalAmount,
-                 String notes) {
+    public Order(User customer, PaymentMethod paymentMethod, Money totalAmount, String notes) {
         this.createdAt = LocalDateTime.now();
         this.status = OrderStatus.CREATED;
-        this.customer = customer;
-        this.paymentMethod = paymentMethod;
-        this.totalAmount = (totalAmount != null) ? totalAmount : new Money(0.0);
+        setCustomer(customer);
+        setPaymentMethod(paymentMethod);
+        setTotalAmount((totalAmount != null) ? totalAmount : new Money(0.0));
         this.notes = notes;
     }
 
@@ -56,6 +53,8 @@ public class Order {
     }
 
     public void setCustomer(User customer) {
+        if (customer == null)
+            throw new IllegalArgumentException("Customer cannot be null");
         this.customer = customer;
     }
 
@@ -72,6 +71,10 @@ public class Order {
     }
 
     public void setStatus(OrderStatus status) {
+        if (status == null)
+            throw new IllegalArgumentException("Order status cannot be null");
+        if (this.status != null && this.status != status && !this.status.canTransitionTo(status))
+            throw new IllegalStateException("Invalid order transition from " + this.status + " to " + status);
         this.status = status;
     }
 
@@ -80,6 +83,8 @@ public class Order {
     }
 
     public void setPaymentMethod(PaymentMethod paymentMethod) {
+        if (paymentMethod == null)
+            throw new IllegalArgumentException("Payment method cannot be null");
         this.paymentMethod = paymentMethod;
     }
 
@@ -88,12 +93,13 @@ public class Order {
     }
 
     public void setTotalAmount(Money totalAmount) {
+        if (totalAmount == null)
+            throw new IllegalArgumentException("Total amount cannot be null");
         this.totalAmount = totalAmount;
     }
 
-    //fixme: se vuoi un overload comodo per settare il totale con un double, puoi aggiungere questo metodo:
     public void setTotalAmount(double amount) {
-        this.totalAmount = new Money(amount);
+        setTotalAmount(new Money(amount));
     }
 
     public String getNotes() {
@@ -119,44 +125,47 @@ public class Order {
     // ----------------------------------------------------
 
     public void markPreparing() {
-        if (status == OrderStatus.CREATED) {
-            this.status = OrderStatus.PREPARING;
-        }
+        transitionTo(OrderStatus.PREPARING);
     }
 
     public void markReady() {
-        if (status == OrderStatus.PREPARING) {
-            this.status = OrderStatus.READY;
-        }
+        transitionTo(OrderStatus.READY);
     }
 
     public void markRetired() {
-        if (status == OrderStatus.READY) {
-            this.status = OrderStatus.RETIRED;
-        }
+        transitionTo(OrderStatus.RETIRED);
     }
 
     public void cancel() {
-        if (status != OrderStatus.RETIRED && status != OrderStatus.CANCELLED) {
-            this.status = OrderStatus.CANCELLED;
-        }
+        transitionTo(OrderStatus.CANCELLED);
     }
 
-    /**
-     * Aggiunge un importo al totale (es. aggiungo un piatto).
-     */
     public void addToTotal(Money amount) {
-        if (amount == null) return;
+        if (amount == null)
+            throw new IllegalArgumentException("Amount cannot be null");
         this.totalAmount = this.totalAmount.add(amount);
     }
 
-    /**
-     * Aggiunge un importo moltiplicato per una quantità (es. 3 × piatto da 8€).
-     */
     public void addToTotal(Money unitPrice, int quantity) {
-        if (unitPrice == null || quantity <= 0) return;
+        if (unitPrice == null)
+            throw new IllegalArgumentException("Unit price cannot be null");
+        if (quantity <= 0)
+            throw new IllegalArgumentException("Quantity must be > 0");
         this.totalAmount = this.totalAmount.add(unitPrice.multiply(quantity));
     }
+
+    private void transitionTo(OrderStatus nextStatus) {
+        if (nextStatus == null)
+            throw new IllegalArgumentException("Next status cannot be null");
+        if (status == null)
+            throw new IllegalStateException("Current status cannot be null");
+
+        if (!status.canTransitionTo(nextStatus))
+            throw new IllegalStateException("Invalid order transition from " + status + " to " + nextStatus);
+
+        setStatus(nextStatus);
+    }
+
 
     @Override
     public String toString() {

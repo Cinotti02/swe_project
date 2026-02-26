@@ -23,12 +23,12 @@ public class User {
 
     public User(String username, Email email, String passwordHash,
                 String name, String surname, Role role) {
-        this.username = username;
-        this.email = email;
-        this.passwordHash = passwordHash;
-        this.name = name;
-        this.surname = surname;
-        this.role = role;
+        setUsername(username);
+        setEmail(email);
+        setPasswordHash(passwordHash);
+        setName(name);
+        setSurname(surname);
+        setRole(role);
         this.fidelityPoints = 0; // default iniziale
     }
 
@@ -49,6 +49,8 @@ public class User {
     }
 
     public void setUsername(String username) {
+        if (username == null || username.isBlank())
+            throw new IllegalArgumentException("Username cannot be empty");
         this.username = username;
     }
 
@@ -57,6 +59,8 @@ public class User {
     }
 
     public void setEmail(Email email) {
+        if (email == null)
+            throw new IllegalArgumentException("Email cannot be null");
         this.email = email;
     }
 
@@ -69,6 +73,8 @@ public class User {
     }
 
     public void setPasswordHash(String passwordHash) {
+        if (passwordHash == null || passwordHash.isBlank())
+            throw new IllegalArgumentException("Password hash cannot be empty");
         this.passwordHash = passwordHash;
     }
 
@@ -77,6 +83,8 @@ public class User {
     }
 
     public void setFidelityPoints(int fidelityPoints) {
+        if (fidelityPoints < 0)
+            throw new IllegalArgumentException("Fidelity points cannot be negative");
         this.fidelityPoints = fidelityPoints;
     }
 
@@ -85,6 +93,8 @@ public class User {
     }
 
     public void setName(String name) {
+        if (name == null || name.isBlank())
+            throw new IllegalArgumentException("Name cannot be empty");
         this.name = name;
     }
 
@@ -93,6 +103,8 @@ public class User {
     }
 
     public void setSurname(String surname) {
+        if (surname == null || surname.isBlank())
+            throw new IllegalArgumentException("Surname cannot be empty");
         this.surname = surname;
     }
 
@@ -101,7 +113,8 @@ public class User {
     }
 
     public void setRole(Role role) {
-        this.role = role;
+        if (role == null)
+            throw new IllegalArgumentException("Role cannot be null");
     }
 
     // -----------------------------------------------------

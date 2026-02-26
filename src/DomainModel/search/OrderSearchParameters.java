@@ -28,6 +28,8 @@ public class OrderSearchParameters {
     }
 
     public OrderSearchParameters setCustomerId(Integer customerId) {
+        if (customerId != null && customerId <= 0)
+            throw new IllegalArgumentException("Customer id must be positive");
         this.customerId = customerId;
         return this;
     }
@@ -43,26 +45,40 @@ public class OrderSearchParameters {
     }
 
     public OrderSearchParameters setCategoryId(Integer categoryId) {
+        if (categoryId != null && categoryId <= 0)
+            throw new IllegalArgumentException("Category id must be positive");
         this.categoryId = categoryId;
         return this;
     }
 
     public OrderSearchParameters setStartDate(LocalDate startDate) {
+        if (endDate != null && startDate != null && startDate.isAfter(endDate))
+            throw new IllegalArgumentException("Start date cannot be after end date");
         this.startDate = startDate;
         return this;
     }
 
     public OrderSearchParameters setEndDate(LocalDate endDate) {
+        if (startDate != null && endDate != null && endDate.isBefore(startDate))
+            throw new IllegalArgumentException("End date cannot be before start date");
         this.endDate = endDate;
         return this;
     }
 
     public OrderSearchParameters setMinTotalAmount(BigDecimal minTotalAmount) {
+        if (minTotalAmount != null && minTotalAmount.signum() < 0)
+            throw new IllegalArgumentException("Min total amount cannot be negative");
+        if (maxTotalAmount != null && minTotalAmount != null && minTotalAmount.compareTo(maxTotalAmount) > 0)
+            throw new IllegalArgumentException("Min total amount cannot be greater than max total amount");
         this.minTotalAmount = minTotalAmount;
         return this;
     }
 
     public OrderSearchParameters setMaxTotalAmount(BigDecimal maxTotalAmount) {
+        if (maxTotalAmount != null && maxTotalAmount.signum() < 0)
+            throw new IllegalArgumentException("Max total amount cannot be negative");
+        if (minTotalAmount != null && maxTotalAmount != null && maxTotalAmount.compareTo(minTotalAmount) < 0)
+            throw new IllegalArgumentException("Max total amount cannot be lower than min total amount");
         this.maxTotalAmount = maxTotalAmount;
         return this;
     }

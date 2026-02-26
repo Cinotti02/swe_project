@@ -1,20 +1,15 @@
 package DomainModel.menu;
 
 public class Category {
-    int id;
-    String name;
-    String description;
+    private int id;
+    private String name;
+    private String description;
     private boolean active;      // se è visibile/ordinabile oppure no
 
     public Category() {}
 
     public Category(String name, String description) {
-
-        if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("Category name cannot be empty");
-        }
-
-        this.name = name;
+        setName(name);
         this.description = description;
         this.active = true;
     }

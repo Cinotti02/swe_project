@@ -49,6 +49,26 @@ public class NotificationDAO extends BaseDAO {
         }
     }
 
+    public java.util.Optional<Notification> getNotificationById(int notificationId) throws SQLException {
+        String sql = """
+                SELECT id, recipient_id, message, type, status, created_at, read_at
+                FROM notifications
+                WHERE id = ?
+                """;
+
+        try (Connection conn = getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, notificationId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return java.util.Optional.of(mapRowToNotification(rs));
+                }
+            }
+        }
+        return java.util.Optional.empty();
+    }
+
     public List<Notification> getNotificationsForUser(int userId) throws SQLException {
         String sql = """
                 SELECT id, recipient_id, message, type, status, created_at, read_at
@@ -98,17 +118,36 @@ public class NotificationDAO extends BaseDAO {
     }
 
     public void markAsRead(int notificationId) throws SQLException {
+        Notification notification = getNotificationById(notificationId)
+                .orElseThrow(() -> new IllegalArgumentException("Notification not found: " + notificationId));
+        notification.markRead();
+        updateNotificationState(notification);
+    }
+
+    public void markAsFailed(int notificationId) throws SQLException {
+        Notification notification = getNotificationById(notificationId)
+                .orElseThrow(() -> new IllegalArgumentException("Notification not found: " + notificationId));
+        notification.markFailed();
+        updateNotificationState(notification);
+    }
+
+    private void updateNotificationState(Notification notification) throws SQLException {
         String sql = """
                 UPDATE notifications
-                SET status = 'READ', read_at = ?
+                SET status = ?, read_at = ?
                 WHERE id = ?
                 """;
 
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setTimestamp(1, Timestamp.valueOf(LocalDateTime.now()));
-            ps.setInt(2, notificationId);
+            ps.setString(1, notification.getStatus().name());
+            if (notification.getReadAt() != null) {
+                ps.setTimestamp(2, Timestamp.valueOf(notification.getReadAt()));
+            } else {
+                ps.setNull(2, Types.TIMESTAMP);
+            }
+            ps.setInt(3, notification.getId());
             ps.executeUpdate();
         }
     }

@@ -4,9 +4,13 @@ public class Email {
     private final String value;
 
     public Email(String value) {
-        if (value == null || !value.matches("^[\\w-.]+@([\\w-]+\\.)+[\\w-]{2,4}$"))
+        if (value == null)
             throw new IllegalArgumentException("Invalid email format");
-        this.value = value;
+        String normalized = value.trim();
+        if (normalized.isEmpty() || !normalized.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"))
+            throw new IllegalArgumentException("Invalid email format");
+
+        this.value = normalized;
     }
 
     public String getValue() { return value; }

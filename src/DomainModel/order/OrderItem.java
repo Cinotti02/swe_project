@@ -48,8 +48,6 @@ public class OrderItem {
         return unitPrice;
     }
 
-    // Non dovresti modificare il prezzo esternamente,
-    // ma lo includo se mai il proprietario vuole applicare sconti.
     public void setUnitPrice(Money unitPrice) {
         if (unitPrice == null)
             throw new IllegalArgumentException("Unit price cannot be null");

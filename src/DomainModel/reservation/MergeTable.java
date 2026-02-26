@@ -80,12 +80,6 @@ public class MergeTable {
         this.mergedGroupId = mergedGroupId;
     }
 
-    // --------------- Utility ---------------
-
-    public int getTableNumber() {
-        return table != null ? table.getNumber() : -1;
-    }
-
     @Override
     public String toString() {
         return "MergeTable{" +

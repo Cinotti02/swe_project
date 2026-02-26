@@ -4,6 +4,7 @@ import DomainModel.user.User;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class Reservation {
@@ -40,12 +41,12 @@ public class Reservation {
         if (numberOfGuests <= 0)
             throw new IllegalArgumentException("Number of guests must be > 0");
 
-        this.customer = customer;
-        this.reservDate = reservDate;
-        this.timeSlot = timeSlot;
-        this.numberOfGuests = numberOfGuests;
+        setCustomer(customer);
+        setReservDate(reservDate);
+        setTimeSlot(timeSlot);
+        setNumberOfGuests(numberOfGuests);
         this.notes = notes;
-        this.status = ReservationStatus.CREATED;
+        setStatus(ReservationStatus.CREATED);
         this.createdAt = LocalDateTime.now();
         this.tables = new ArrayList<>();
     }
@@ -113,15 +114,30 @@ public class Reservation {
     }
 
     public void setStatus(ReservationStatus status) {
+        if (status == null)
+            throw new IllegalArgumentException("Reservation status cannot be null");
+        if (this.status != null && this.status != status && !this.status.canTransitionTo(status))
+            throw new IllegalStateException("Invalid reservation transition from " + this.status + " to " + status);
         this.status = status;
     }
 
     public List<MergeTable> getTables() {
-        return tables;
+        return Collections.unmodifiableList(tables);
     }
 
     public void setTables(List<MergeTable> tables) {
-        this.tables = tables;
+        if (tables == null) {
+            this.tables = new ArrayList<>();
+            return;
+        }
+
+        List<MergeTable> copy = new ArrayList<>();
+        for (MergeTable table : tables) {
+            if (table == null)
+                throw new IllegalArgumentException("Tables list cannot contain null elements");
+            copy.add(table);
+        }
+        this.tables = copy;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -131,7 +147,8 @@ public class Reservation {
     // -------------------- Domain Logic --------------------
 
     public void addTable(MergeTable mergeTable) {
-        if (mergeTable == null) return;
+        if (mergeTable == null)
+            throw new IllegalArgumentException("Merge table cannot be null");
         this.tables.add(mergeTable);
     }
 
@@ -143,27 +160,36 @@ public class Reservation {
     public boolean isCanceled()  { return status == ReservationStatus.CANCELED; }
 
     public void confirm() {
-        if (isCreated()) {
-            this.status = ReservationStatus.CONFIRMED;
-        }
+        transitionTo(ReservationStatus.CONFIRMED);
     }
 
     public void checkIn() {
-        if (isConfirmed()) {
-            this.status = ReservationStatus.CHECKED_IN;
-        }
+        transitionTo(ReservationStatus.CHECKED_IN);
     }
 
     public void complete() {
-        if (isCheckedIn()) {
-            this.status = ReservationStatus.COMPLETED;
-        }
+        transitionTo(ReservationStatus.COMPLETED);
     }
 
     public void cancel() {
-        if (!isCompleted() && !isCanceled()) {
-            this.status = ReservationStatus.CANCELED;
-        }
+        transitionTo(ReservationStatus.CANCELED);
+    }
+
+    public void markNoShow() {
+        transitionTo(ReservationStatus.NO_SHOW);
+    }
+
+
+    private void transitionTo(ReservationStatus nextStatus) {
+        if (nextStatus == null)
+            throw new IllegalArgumentException("Next status cannot be null");
+        if (status == null)
+            throw new IllegalStateException("Current status cannot be null");
+
+        if (!status.canTransitionTo(nextStatus))
+            throw new IllegalStateException("Invalid reservation transition from " + status + " to " + nextStatus);
+
+        setStatus(nextStatus);
     }
 
     @Override

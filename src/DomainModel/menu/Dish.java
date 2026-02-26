@@ -13,23 +13,10 @@ public class Dish {
     public Dish(){}
 
     public Dish(String name, String description, Money price, Category category) {
-
-        if(name == null || name.isEmpty()) {
-            throw new IllegalArgumentException("Name cannot be null or empty");
-        }
-        if(description == null || description.isEmpty()) {
-            throw new IllegalArgumentException("Description cannot be null or empty");
-        }
-        if(price == null) {
-            throw new IllegalArgumentException("Price must be greater than zero");
-        }
-        if(category == null) {
-            throw new IllegalArgumentException("Category cannot be null");
-        }
-        this.name = name;
-        this.description = description;
-        this.price = price;
-        this.category = category;
+        setName(name);
+        setDescription(description);
+        setPrice(price);
+        setCategory(category);
         this.available = true;
     }
 
@@ -53,7 +40,7 @@ public class Dish {
     }
 
     public void setName(String name) {
-        if(name == null || name.isEmpty()) {
+        if(name == null || name.isBlank()) {
             throw new IllegalArgumentException("Name cannot be null or empty");
         }
         this.name = name;
@@ -64,6 +51,9 @@ public class Dish {
     }
 
     public void setDescription(String description) {
+        if(description == null || description.isBlank()) {
+            throw new IllegalArgumentException("Description cannot be null or empty");
+        }
         this.description = description;
     }
 

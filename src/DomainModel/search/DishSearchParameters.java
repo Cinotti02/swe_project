@@ -18,6 +18,8 @@ public class DishSearchParameters {
     }
 
     public DishSearchParameters setCategoryId(Integer categoryId) {
+        if (categoryId != null && categoryId <= 0)
+            throw new IllegalArgumentException("Category id must be positive");
         this.categoryId = categoryId;
         return this;
     }
@@ -28,17 +30,27 @@ public class DishSearchParameters {
     }
 
     public DishSearchParameters setMinPrice(BigDecimal minPrice) {
+        if (minPrice != null && minPrice.signum() < 0)
+            throw new IllegalArgumentException("Min price cannot be negative");
+        if (maxPrice != null && minPrice != null && minPrice.compareTo(maxPrice) > 0)
+            throw new IllegalArgumentException("Min price cannot be greater than max price");
         this.minPrice = minPrice;
         return this;
     }
 
     public DishSearchParameters setMaxPrice(BigDecimal maxPrice) {
+        if (maxPrice != null && maxPrice.signum() < 0)
+            throw new IllegalArgumentException("Max price cannot be negative");
+        if (minPrice != null && maxPrice != null && maxPrice.compareTo(minPrice) < 0)
+            throw new IllegalArgumentException("Max price cannot be lower than min price");
         this.maxPrice = maxPrice;
         return this;
     }
 
     public DishSearchParameters setNameContains(String nameContains) {
-        this.nameContains = nameContains;
+        this.nameContains = (nameContains != null) ? nameContains.trim() : null;
+        if (this.nameContains != null && this.nameContains.isEmpty())
+            this.nameContains = null;
         return this;
     }
 
