@@ -115,6 +115,7 @@ public class User {
     public void setRole(Role role) {
         if (role == null)
             throw new IllegalArgumentException("Role cannot be null");
+        this.role = role;
     }
 
     // -----------------------------------------------------

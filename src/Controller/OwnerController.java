@@ -64,6 +64,34 @@ public class OwnerController {
         }
     }
 
+    public void renameCategory(int categoryId, String name, String description) {
+        try {
+            ownerAdminService.renameCategory(categoryId, name, description);
+            System.out.println("Categoria aggiornata");
+        } catch (SQLException | IllegalArgumentException e) {
+            System.err.println("Impossibile aggiornare la categoria: " + e.getMessage());
+        }
+    }
+
+    public void toggleCategory(int categoryId, boolean active) {
+        try {
+            ownerAdminService.toggleCategory(categoryId, active);
+            System.out.println("Stato categoria aggiornato");
+        } catch (SQLException | IllegalArgumentException e) {
+            System.err.println("Impossibile aggiornare lo stato categoria: " + e.getMessage());
+        }
+    }
+
+    public void deleteCategory(int categoryId) {
+        try {
+            ownerAdminService.deleteCategory(categoryId);
+            System.out.println("Categoria eliminata");
+        } catch (SQLException | IllegalArgumentException e) {
+            System.err.println("Impossibile eliminare la categoria: " + e.getMessage());
+        }
+    }
+
+
     public void addDish(String name, String description, double price, int categoryId) {
         try {
             Dish dish = ownerAdminService.createDish(name, description, new Money(price), categoryId);
@@ -89,6 +117,25 @@ public class OwnerController {
         }
     }
 
+    public void updateDishDescription(int dishId, String description) {
+        try {
+            ownerAdminService.updateDishDescription(dishId, description);
+            System.out.println("Descrizione piatto aggiornata");
+        } catch (SQLException | IllegalArgumentException e) {
+            System.err.println("Impossibile aggiornare la descrizione: " + e.getMessage());
+        }
+    }
+
+    public void deleteDish(int dishId) {
+        try {
+            ownerAdminService.deleteDish(dishId);
+            System.out.println("Piatto eliminato");
+        } catch (SQLException | IllegalArgumentException e) {
+            System.err.println("Impossibile eliminare il piatto: " + e.getMessage());
+        }
+    }
+
+
     public void listTables() {
         try {
             List<Table> tables = ownerAdminService.listTables();
@@ -110,12 +157,67 @@ public class OwnerController {
         }
     }
 
+    public void updateTable(int tableId, int number, int seats, boolean joinable, String location) {
+        try {
+            ownerAdminService.updateTable(tableId, number, seats, joinable, location);
+            System.out.println("Tavolo aggiornato");
+        } catch (SQLException | IllegalArgumentException e) {
+            System.err.println("Impossibile aggiornare il tavolo: " + e.getMessage());
+        }
+    }
+
+    public void setTableAvailability(int tableId, boolean available) {
+        try {
+            ownerAdminService.setTableAvailability(tableId, available);
+            System.out.println("Disponibilità tavolo aggiornata");
+        } catch (SQLException | IllegalArgumentException e) {
+            System.err.println("Impossibile aggiornare disponibilità tavolo: " + e.getMessage());
+        }
+    }
+
+    public void deleteTable(int tableId) {
+        try {
+            ownerAdminService.deleteTable(tableId);
+            System.out.println("Tavolo eliminato");
+        } catch (SQLException | IllegalArgumentException e) {
+            System.err.println("Impossibile eliminare il tavolo: " + e.getMessage());
+        }
+    }
+
+
     public void configureSlot(LocalTime startTime, LocalTime endTime) {
         try {
             Slot slot = ownerAdminService.addSlot(startTime, endTime);
             System.out.println("Slot creato con id " + slot.getId());
         } catch (SQLException | IllegalArgumentException e) {
             System.err.println("Impossibile creare lo slot: " + e.getMessage());
+        }
+    }
+
+    public void updateSlot(int slotId, LocalTime startTime, LocalTime endTime, boolean closed) {
+        try {
+            ownerAdminService.updateSlot(slotId, startTime, endTime, closed);
+            System.out.println("Slot aggiornato");
+        } catch (SQLException | IllegalArgumentException e) {
+            System.err.println("Impossibile aggiornare lo slot: " + e.getMessage());
+        }
+    }
+
+    public void setSlotClosed(int slotId, boolean closed) {
+        try {
+            ownerAdminService.setSlotClosed(slotId, closed);
+            System.out.println("Stato slot aggiornato");
+        } catch (SQLException | IllegalArgumentException e) {
+            System.err.println("Impossibile aggiornare stato slot: " + e.getMessage());
+        }
+    }
+
+    public void deleteSlot(int slotId) {
+        try {
+            ownerAdminService.deleteSlot(slotId);
+            System.out.println("Slot eliminato");
+        } catch (SQLException | IllegalArgumentException e) {
+            System.err.println("Impossibile eliminare lo slot: " + e.getMessage());
         }
     }
 
