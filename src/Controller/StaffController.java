@@ -12,7 +12,7 @@ import DomainModel.search.SearchCriteria;
 import DomainModel.search.SearchResult;
 import ServiceLayer.SearchService;
 import ServiceLayer.StaffOperationService;
-import ORM.NotificationDAO;
+import ServiceLayer.NotificationService;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -21,19 +21,19 @@ import java.util.List;
 public class StaffController {
     private final StaffOperationService staffOperationService;
     private final SearchService searchService;
-    private final NotificationDAO notificationDAO;
+    private final NotificationService notificationService;
 
-    public StaffController(StaffOperationService staffOperationService, SearchService searchService, NotificationDAO notificationDAO) {
+    public StaffController(StaffOperationService staffOperationService, SearchService searchService, NotificationService notificationService) {
         this.staffOperationService = staffOperationService;
         this.searchService = searchService;
-        this.notificationDAO = notificationDAO;
+        this.notificationService = notificationService;
     }
 
     public void showNotifications(int userId, boolean unreadOnly) {
         try {
             List<Notification> notifications = unreadOnly
-                    ? notificationDAO.getUnreadNotificationsForUser(userId)
-                    : notificationDAO.getNotificationsForUser(userId);
+                    ? notificationService.listNotificationsForUser(userId, true)
+                    : notificationService.listNotificationsForUser(userId, false);
             System.out.println(unreadOnly ? "=== Notifiche staff non lette ===" : "=== Notifiche staff ===");
             if (notifications.isEmpty()) {
                 System.out.println("(nessuna notifica)");
@@ -47,7 +47,7 @@ public class StaffController {
 
     public void markNotificationAsRead(int notificationId) {
         try {
-            notificationDAO.markAsRead(notificationId);
+            notificationService.markAsRead(notificationId);
             System.out.println("Notifica segnata come letta");
         } catch (SQLException | IllegalArgumentException e) {
             System.err.println("Errore aggiornamento notifica: " + e.getMessage());

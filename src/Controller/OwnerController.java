@@ -19,7 +19,7 @@ import DomainModel.valueObject.Money;
 import ServiceLayer.MenuQueryService;
 import ServiceLayer.OwnerAdminService;
 import ServiceLayer.SearchService;
-import ORM.NotificationDAO;
+import ServiceLayer.NotificationService;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;
@@ -34,20 +34,22 @@ public class OwnerController {
     private final OwnerAdminService ownerAdminService;
     private final MenuQueryService menuQueryService;
     private final SearchService searchService;
-    private final NotificationDAO notificationDAO;
+    private final NotificationService notificationService;
 
-    public OwnerController(OwnerAdminService ownerAdminService, MenuQueryService menuQueryService, SearchService searchService, NotificationDAO notificationDAO) {
+    public OwnerController(OwnerAdminService ownerAdminService, MenuQueryService menuQueryService, SearchService searchService, NotificationService notificationService) {
         this.ownerAdminService = ownerAdminService;
         this.menuQueryService = menuQueryService;
         this.searchService = searchService;
-        this.notificationDAO = notificationDAO;
+        this.notificationService = notificationService;
     }
+
+
 
     public void showNotifications(int userId, boolean unreadOnly) {
         try {
             List<Notification> notifications = unreadOnly
-                    ? notificationDAO.getUnreadNotificationsForUser(userId)
-                    : notificationDAO.getNotificationsForUser(userId);
+                    ? notificationService.listNotificationsForUser(userId, true)
+                    : notificationService.listNotificationsForUser(userId, false);
             System.out.println(unreadOnly ? "=== Notifiche owner non lette ===" : "=== Notifiche owner ===");
             if (notifications.isEmpty()) {
                 System.out.println("(nessuna notifica)");
@@ -61,7 +63,7 @@ public class OwnerController {
 
     public void markNotificationAsRead(int notificationId) {
         try {
-            notificationDAO.markAsRead(notificationId);
+            notificationService.markAsRead(notificationId);
             System.out.println("Notifica segnata come letta");
         } catch (SQLException | IllegalArgumentException e) {
             System.err.println("Errore aggiornamento notifica: " + e.getMessage());

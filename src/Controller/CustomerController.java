@@ -13,7 +13,7 @@ import ServiceLayer.CartService;
 import ServiceLayer.MenuQueryService;
 import ServiceLayer.OrderService;
 import ServiceLayer.ReservationService;
-import ORM.NotificationDAO;
+import ServiceLayer.NotificationService;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -26,18 +26,18 @@ public class CustomerController {
     private final CartService cartService;
     private final OrderService orderService;
     private final ReservationService reservationService;
-    private final NotificationDAO notificationDAO;
+    private final NotificationService notificationService;
 
     public CustomerController(MenuQueryService menuQueryService,
                               CartService cartService,
                               OrderService orderService,
                               ReservationService reservationService,
-                              NotificationDAO notificationDAO) {
+                              NotificationService notificationService) {
         this.menuQueryService = menuQueryService;
         this.cartService = cartService;
         this.orderService = orderService;
         this.reservationService = reservationService;
-        this.notificationDAO = notificationDAO;
+        this.notificationService = notificationService;
     }
 
     public void showMenu() {
@@ -137,9 +137,7 @@ public class CustomerController {
 
     public void showNotifications(User user, boolean unreadOnly) {
         try {
-            List<Notification> notifications = unreadOnly
-                    ? notificationDAO.getUnreadNotificationsForUser(user.getId())
-                    : notificationDAO.getNotificationsForUser(user.getId());
+            List<Notification> notifications = notificationService.listNotificationsForUser(user.getId(), unreadOnly);
 
             System.out.println(unreadOnly ? "=== Notifiche non lette ===" : "=== Tutte le notifiche ===");
             if (notifications.isEmpty()) {
@@ -160,7 +158,7 @@ public class CustomerController {
 
     public void markNotificationAsRead(int notificationId) {
         try {
-            notificationDAO.markAsRead(notificationId);
+            notificationService.markAsRead(notificationId);
             System.out.println("Notifica segnata come letta");
         } catch (SQLException | IllegalArgumentException e) {
             System.err.println("Impossibile aggiornare la notifica: " + e.getMessage());
