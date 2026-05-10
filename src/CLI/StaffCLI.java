@@ -45,15 +45,15 @@ public class StaffCLI {
             String choice = scanner.nextLine().trim();
             switch (choice) {
                 case "1" -> staffController.showKitchenQueue();
-                case "2" -> handleOrderUpdate();
+                case "2" -> handleOrderUpdate(user);
                 case "3" -> handleSearchOrders();
                 case "4" -> handleReservationList();
                 case "5" -> handleReservationAction(Action.CONFIRM);
                 case "6" -> handleReservationAction(Action.CHECK_IN);
                 case "7" -> handleReservationAction(Action.NO_SHOW);
                 case "8" -> handleSearchReservations();
-                case "9" -> staffController.showNotifications(user.getId(), false);
-                case "10" -> staffController.showNotifications(user.getId(), true);
+                case "9" -> handleShowNotifications(user, false);
+                case "10" -> handleShowNotifications(user, true);
                 case "11" -> handleMarkNotificationAsRead();
                 case "0" -> {
                     System.out.println("Logout effettuato.\n");
@@ -64,14 +64,14 @@ public class StaffCLI {
         }
     }
 
-    private void handleOrderUpdate() {
+    private void handleOrderUpdate(User user) {
         Integer orderId = readInt("ID ordine: ");
         if (orderId == null) return;
 
         OrderStatus targetStatus = readOrderStatus();
         if (targetStatus == null) return;
 
-        staffController.updateOrderStatus(orderId, targetStatus);
+        staffController.updateOrderStatus(orderId, targetStatus, user.getId());
     }
 
     private OrderStatus readOrderStatus() {
@@ -227,11 +227,28 @@ public class StaffCLI {
         }
     }
 
+
+    private void handleShowNotifications(User user, boolean unreadOnly) {
+        try {
+            var notifications = staffController.getNotifications(user.getId(), unreadOnly);
+            System.out.println(unreadOnly ? "=== Notifiche staff non lette ===" : "=== Notifiche staff ===");
+            if (notifications.isEmpty()) {
+                System.out.println("(nessuna notifica)");
+                return;
+            }
+            notifications.forEach(n -> System.out.println("#" + n.getId() + " | " + n.getType() + " | " + n.getStatus() + " | " + n.getMessage()));
+        } catch (Exception e) {
+            System.err.println("Errore caricamento notifiche: " + e.getMessage());
+        }
+    }
+
     private void handleMarkNotificationAsRead() {
         Integer notificationId = readInt("ID notifica: ");
         if (notificationId == null) return;
-        staffController.markNotificationAsRead(notificationId);
+        try { staffController.markNotificationAsRead(notificationId); System.out.println("Notifica segnata come letta"); } catch (Exception e) { System.err.println("Errore aggiornamento notifica: " + e.getMessage()); }
     }
+
+
 
     private enum Action {
         CONFIRM, CHECK_IN, NO_SHOW

@@ -43,30 +43,19 @@ public class OwnerController {
         this.notificationService = notificationService;
     }
 
-
-
-    public void showNotifications(int userId, boolean unreadOnly) {
-        try {
-            List<Notification> notifications = unreadOnly
-                    ? notificationService.listNotificationsForUser(userId, true)
-                    : notificationService.listNotificationsForUser(userId, false);
-            System.out.println(unreadOnly ? "=== Notifiche owner non lette ===" : "=== Notifiche owner ===");
-            if (notifications.isEmpty()) {
-                System.out.println("(nessuna notifica)");
-                return;
-            }
-            notifications.forEach(n -> System.out.println("#" + n.getId() + " | " + n.getType() + " | " + n.getStatus() + " | " + n.getMessage()));
-        } catch (SQLException e) {
-            System.err.println("Errore caricamento notifiche: " + e.getMessage());
-        }
+    public List<Notification> getNotifications(int userId, boolean unreadOnly) throws SQLException {
+        return notificationService.listNotificationsForUser(userId, unreadOnly);
     }
 
-    public void markNotificationAsRead(int notificationId) {
+    public void markNotificationAsRead(int notificationId) throws SQLException {
+        notificationService.markAsRead(notificationId);
+    }
+
+    public void notifyOwnerAction(int ownerUserId, String action) {
         try {
-            notificationService.markAsRead(notificationId);
-            System.out.println("Notifica segnata come letta");
+            notificationService.notifyUser(ownerUserId, action, DomainModel.notification.TypeNotification.UPDATE);
         } catch (SQLException | IllegalArgumentException e) {
-            System.err.println("Errore aggiornamento notifica: " + e.getMessage());
+            System.err.println("Errore notifica owner: " + e.getMessage());
         }
     }
 

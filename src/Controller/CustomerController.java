@@ -156,6 +156,10 @@ public class CustomerController {
         }
     }
 
+    public List<Notification> getNotifications(User user, boolean unreadOnly) throws SQLException {
+        return notificationService.listNotificationsForUser(user.getId(), unreadOnly);
+    }
+
     public void markNotificationAsRead(int notificationId) {
         try {
             notificationService.markAsRead(notificationId);

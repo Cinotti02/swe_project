@@ -52,8 +52,8 @@ public class CustomerCLI {
                 case "7" -> customerController.listReservations(user);
                 case "8" -> handleCancelReservation(user);
                 case "9" -> profileMenu(user);
-                case "10" -> customerController.showNotifications(user, false);
-                case "11" -> customerController.showNotifications(user, true);
+                case "10" -> handleShowNotifications(user, false);
+                case "11" -> handleShowNotifications(user, true);
                 case "12" -> handleMarkNotificationAsRead();
                 case "0" -> {
                     System.out.println("Logout effettuato.\n");
@@ -112,12 +112,31 @@ public class CustomerCLI {
         customerController.cancelReservation(user, reservationId);
     }
 
+
+    private void handleShowNotifications(User user, boolean unreadOnly) {
+        try {
+            var notifications = customerController.getNotifications(user, unreadOnly);
+            System.out.println(unreadOnly ? "=== Notifiche non lette ===" : "=== Tutte le notifiche ===");
+            if (notifications.isEmpty()) {
+                System.out.println("(nessuna notifica)");
+                return;
+            }
+            notifications.forEach(n -> System.out.println("#" + n.getId() + " | " + n.getType() + " | " + n.getStatus() + " | " + n.getMessage()));
+        } catch (Exception e) {
+            System.err.println("Impossibile caricare notifiche: " + e.getMessage());
+        }
+    }
+
     private void handleMarkNotificationAsRead() {
         Integer notificationId = readInt("ID notifica: ");
         if (notificationId == null) return;
-        customerController.markNotificationAsRead(notificationId);
+        try {
+            customerController.markNotificationAsRead(notificationId);
+            System.out.println("Notifica segnata come letta");
+        } catch (Exception e) {
+            System.err.println("Errore aggiornamento notifica: " + e.getMessage());
+        }
     }
-
     private void profileMenu(User user) {
         while (true) {
             System.out.println("--- Profilo ---");

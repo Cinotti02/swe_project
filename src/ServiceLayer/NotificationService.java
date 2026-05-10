@@ -1,6 +1,8 @@
 package ServiceLayer;
 
 import DomainModel.notification.Notification;
+import DomainModel.notification.TypeNotification;
+import DomainModel.user.User;
 import ORM.NotificationDAO;
 
 import java.sql.SQLException;
@@ -21,6 +23,18 @@ public class NotificationService {
         return unreadOnly
                 ? notificationDAO.getUnreadNotificationsForUser(userId)
                 : notificationDAO.getNotificationsForUser(userId);
+    }
+
+
+    public void notifyUser(int userId, String message, TypeNotification type) throws SQLException {
+        if (userId <= 0) throw new IllegalArgumentException("User id non valido");
+        if (message == null || message.isBlank()) throw new IllegalArgumentException("Messaggio notifica vuoto");
+        if (type == null) throw new IllegalArgumentException("Tipo notifica nullo");
+
+        User recipient = new User();
+        recipient.setId(userId);
+        Notification notification = new Notification(recipient, message, type);
+        notificationDAO.addNotification(notification);
     }
 
     public void markAsRead(int notificationId) throws SQLException {

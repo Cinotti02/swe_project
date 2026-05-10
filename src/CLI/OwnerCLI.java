@@ -16,6 +16,7 @@ public class OwnerCLI {
 
     private final OwnerController ownerController;
     private final Scanner scanner;
+    private int currentUserId;
 
     public OwnerCLI(OwnerController ownerController, Scanner scanner) {
         this.ownerController = ownerController;
@@ -23,6 +24,7 @@ public class OwnerCLI {
     }
 
     public void run(User user) {
+        this.currentUserId = user.getId();
         while (true) {
             System.out.println("=== Menu owner ===");
             System.out.println("1) Panoramica menu");
@@ -48,9 +50,7 @@ public class OwnerCLI {
             System.out.println("21) Cerca piatti");
             System.out.println("22) Cerca ordini");
             System.out.println("23) Cerca prenotazioni");
-            System.out.println("24) Mostra notifiche");
-            System.out.println("25) Mostra notifiche non lette");
-            System.out.println("26) Segna notifica come letta");
+            System.out.println("24) Notifiche");
             System.out.println("0) Logout");
             System.out.print("Scelta: ");
             String choice = scanner.nextLine().trim();
@@ -78,15 +78,46 @@ public class OwnerCLI {
                 case "21" -> handleSearchDishes();
                 case "22" -> handleSearchOrders();
                 case "23" -> handleSearchReservations();
-                case "24" -> ownerController.showNotifications(user.getId(), false);
-                case "25" -> ownerController.showNotifications(user.getId(), true);
-                case "26" -> handleMarkNotificationAsRead();
+                case "24" -> notificationsSubmenu(user);
                 case "0" -> {
                     System.out.println("Logout effettuato.\n");
                     return;
                 }
                 default -> System.out.println("Scelta non valida.\n");
             }
+        }
+    }
+
+    private void notificationsSubmenu(User user) {
+        while (true) {
+            System.out.println("--- Notifiche owner ---");
+            System.out.println("1) Mostra tutte");
+            System.out.println("2) Mostra non lette");
+            System.out.println("3) Segna come letta");
+            System.out.println("0) Indietro");
+            System.out.print("Scelta: ");
+            String c = scanner.nextLine().trim();
+            switch (c) {
+                case "1" -> handleShowNotifications(user, false);
+                case "2" -> handleShowNotifications(user, true);
+                case "3" -> handleMarkNotificationAsRead();
+                case "0" -> { return; }
+                default -> System.out.println("Scelta non valida.");
+            }
+        }
+    }
+
+    private void handleShowNotifications(User user, boolean unreadOnly) {
+        try {
+            var notifications = ownerController.getNotifications(user.getId(), unreadOnly);
+            System.out.println(unreadOnly ? "=== Notifiche owner non lette ===" : "=== Notifiche owner ===");
+            if (notifications.isEmpty()) {
+                System.out.println("(nessuna notifica)");
+                return;
+            }
+            notifications.forEach(n -> System.out.println("#" + n.getId() + " | " + n.getType() + " | " + n.getStatus() + " | " + n.getMessage()));
+        } catch (Exception e) {
+            System.err.println("Errore caricamento notifiche: " + e.getMessage());
         }
     }
 
@@ -100,6 +131,7 @@ public class OwnerCLI {
             return;
         }
         ownerController.addCategory(name, desc);
+        ownerController.notifyOwnerAction(currentUserId, "Categoria creata: " + name);
     }
 
     private void handleUpdateCategory() {
@@ -284,7 +316,7 @@ public class OwnerCLI {
     private void handleMarkNotificationAsRead() {
         Integer notificationId = readInt("ID notifica: ");
         if (notificationId == null) return;
-        ownerController.markNotificationAsRead(notificationId);
+        try { ownerController.markNotificationAsRead(notificationId); System.out.println("Notifica segnata come letta"); } catch (Exception e) { System.err.println("Errore aggiornamento notifica: " + e.getMessage()); }
     }
 
     private Integer readInt(String prompt) {

@@ -29,29 +29,12 @@ public class StaffController {
         this.notificationService = notificationService;
     }
 
-    public void showNotifications(int userId, boolean unreadOnly) {
-        try {
-            List<Notification> notifications = unreadOnly
-                    ? notificationService.listNotificationsForUser(userId, true)
-                    : notificationService.listNotificationsForUser(userId, false);
-            System.out.println(unreadOnly ? "=== Notifiche staff non lette ===" : "=== Notifiche staff ===");
-            if (notifications.isEmpty()) {
-                System.out.println("(nessuna notifica)");
-                return;
-            }
-            notifications.forEach(n -> System.out.println("#" + n.getId() + " | " + n.getType() + " | " + n.getStatus() + " | " + n.getMessage()));
-        } catch (SQLException e) {
-            System.err.println("Errore caricamento notifiche: " + e.getMessage());
-        }
+    public List<Notification> getNotifications(int userId, boolean unreadOnly) throws SQLException {
+        return notificationService.listNotificationsForUser(userId, unreadOnly);
     }
 
-    public void markNotificationAsRead(int notificationId) {
-        try {
-            notificationService.markAsRead(notificationId);
-            System.out.println("Notifica segnata come letta");
-        } catch (SQLException | IllegalArgumentException e) {
-            System.err.println("Errore aggiornamento notifica: " + e.getMessage());
-        }
+    public void markNotificationAsRead(int notificationId) throws SQLException {
+        notificationService.markAsRead(notificationId);
     }
 
     public void showKitchenQueue() {
@@ -101,9 +84,10 @@ public class StaffController {
         }
     }
 
-    public void updateOrderStatus(int orderId, OrderStatus nextStatus) {
+    public void updateOrderStatus(int orderId, OrderStatus nextStatus, int staffUserId) {
         try {
             staffOperationService.updateOrderStatus(orderId, nextStatus);
+            notificationService.notifyUser(staffUserId, "Stato ordine #" + orderId + " aggiornato a " + nextStatus, DomainModel.notification.TypeNotification.UPDATE);
         } catch (SQLException | IllegalArgumentException e) {
             System.err.println("Errore nel cambio stato ordine: " + e.getMessage());
         }
