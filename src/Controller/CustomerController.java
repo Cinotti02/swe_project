@@ -1,6 +1,7 @@
 package Controller;
 
 import DomainModel.menu.Category;
+import DomainModel.notification.Notification;
 import DomainModel.menu.Dish;
 import DomainModel.order.Order;
 import DomainModel.order.OrderItem;
@@ -12,6 +13,7 @@ import ServiceLayer.CartService;
 import ServiceLayer.MenuQueryService;
 import ServiceLayer.OrderService;
 import ServiceLayer.ReservationService;
+import ORM.NotificationDAO;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -24,15 +26,18 @@ public class CustomerController {
     private final CartService cartService;
     private final OrderService orderService;
     private final ReservationService reservationService;
+    private final NotificationDAO notificationDAO;
 
     public CustomerController(MenuQueryService menuQueryService,
                               CartService cartService,
                               OrderService orderService,
-                              ReservationService reservationService) {
+                              ReservationService reservationService,
+                              NotificationDAO notificationDAO) {
         this.menuQueryService = menuQueryService;
         this.cartService = cartService;
         this.orderService = orderService;
         this.reservationService = reservationService;
+        this.notificationDAO = notificationDAO;
     }
 
     public void showMenu() {
@@ -127,6 +132,38 @@ public class CustomerController {
             }
         } catch (SQLException e) {
             System.err.println("Impossibile caricare le prenotazioni: " + e.getMessage());
+        }
+    }
+
+    public void showNotifications(User user, boolean unreadOnly) {
+        try {
+            List<Notification> notifications = unreadOnly
+                    ? notificationDAO.getUnreadNotificationsForUser(user.getId())
+                    : notificationDAO.getNotificationsForUser(user.getId());
+
+            System.out.println(unreadOnly ? "=== Notifiche non lette ===" : "=== Tutte le notifiche ===");
+            if (notifications.isEmpty()) {
+                System.out.println("(nessuna notifica)");
+                return;
+            }
+            for (Notification n : notifications) {
+                System.out.println("#" + n.getId()
+                        + " | tipo:" + n.getType()
+                        + " | stato:" + n.getStatus()
+                        + " | msg:" + n.getMessage()
+                        + " | creata:" + n.getCreatedAt());
+            }
+        } catch (SQLException e) {
+            System.err.println("Impossibile caricare le notifiche: " + e.getMessage());
+        }
+    }
+
+    public void markNotificationAsRead(int notificationId) {
+        try {
+            notificationDAO.markAsRead(notificationId);
+            System.out.println("Notifica segnata come letta");
+        } catch (SQLException | IllegalArgumentException e) {
+            System.err.println("Impossibile aggiornare la notifica: " + e.getMessage());
         }
     }
 

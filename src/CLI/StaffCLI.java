@@ -37,6 +37,9 @@ public class StaffCLI {
             System.out.println("6) Check-in prenotazione");
             System.out.println("7) Segna no-show");
             System.out.println("8) Cerca prenotazioni");
+            System.out.println("9) Mostra notifiche");
+            System.out.println("10) Mostra notifiche non lette");
+            System.out.println("11) Segna notifica come letta");
             System.out.println("0) Logout");
             System.out.print("Scelta: ");
             String choice = scanner.nextLine().trim();
@@ -49,6 +52,9 @@ public class StaffCLI {
                 case "6" -> handleReservationAction(Action.CHECK_IN);
                 case "7" -> handleReservationAction(Action.NO_SHOW);
                 case "8" -> handleSearchReservations();
+                case "9" -> staffController.showNotifications(user.getId(), false);
+                case "10" -> staffController.showNotifications(user.getId(), true);
+                case "11" -> handleMarkNotificationAsRead();
                 case "0" -> {
                     System.out.println("Logout effettuato.\n");
                     return;
@@ -219,6 +225,12 @@ public class StaffCLI {
             System.out.println("Stato non valido, filtro ignorato.");
             return null;
         }
+    }
+
+    private void handleMarkNotificationAsRead() {
+        Integer notificationId = readInt("ID notifica: ");
+        if (notificationId == null) return;
+        staffController.markNotificationAsRead(notificationId);
     }
 
     private enum Action {

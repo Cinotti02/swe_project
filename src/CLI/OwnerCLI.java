@@ -48,22 +48,39 @@ public class OwnerCLI {
             System.out.println("21) Cerca piatti");
             System.out.println("22) Cerca ordini");
             System.out.println("23) Cerca prenotazioni");
+            System.out.println("24) Mostra notifiche");
+            System.out.println("25) Mostra notifiche non lette");
+            System.out.println("26) Segna notifica come letta");
             System.out.println("0) Logout");
             System.out.print("Scelta: ");
             String choice = scanner.nextLine().trim();
             switch (choice) {
                 case "1" -> ownerController.printMenuOverview();
                 case "2" -> handleCreateCategory();
-                case "3" -> handleCreateDish();
-                case "4" -> handleToggleDish();
-                case "5" -> handleUpdateDishPrice();
-                case "6" -> ownerController.listTables();
-                case "7" -> handleAddTable();
-                case "8" -> handleListSlots();
-                case "9" -> handleAddSlot();
-                case "10" -> handleSearchDishes();
-                case "11" -> handleSearchOrders();
-                case "12" -> handleSearchReservations();
+                case "3" -> handleUpdateCategory();
+                case "4" -> handleToggleCategory();
+                case "5" -> handleDeleteCategory();
+                case "6" -> handleCreateDish();
+                case "7" -> handleToggleDish();
+                case "8" -> handleUpdateDishPrice();
+                case "9" -> handleUpdateDishDescription();
+                case "10" -> handleDeleteDish();
+                case "11" -> ownerController.listTables();
+                case "12" -> handleAddTable();
+                case "13" -> handleUpdateTable();
+                case "14" -> handleSetTableAvailability();
+                case "15" -> handleDeleteTable();
+                case "16" -> handleListSlots();
+                case "17" -> handleAddSlot();
+                case "18" -> handleUpdateSlot();
+                case "19" -> handleSetSlotClosed();
+                case "20" -> handleDeleteSlot();
+                case "21" -> handleSearchDishes();
+                case "22" -> handleSearchOrders();
+                case "23" -> handleSearchReservations();
+                case "24" -> ownerController.showNotifications(user.getId(), false);
+                case "25" -> ownerController.showNotifications(user.getId(), true);
+                case "26" -> handleMarkNotificationAsRead();
                 case "0" -> {
                     System.out.println("Logout effettuato.\n");
                     return;
@@ -85,6 +102,33 @@ public class OwnerCLI {
         ownerController.addCategory(name, desc);
     }
 
+    private void handleUpdateCategory() {
+        Integer categoryId = readInt("ID categoria: ");
+        if (categoryId == null) return;
+        System.out.print("Nuovo nome: ");
+        String name = scanner.nextLine().trim();
+        System.out.print("Nuova descrizione: ");
+        String description = scanner.nextLine().trim();
+        if (name.isBlank()) {
+            System.out.println("Nome obbligatorio\n");
+            return;
+        }
+        ownerController.renameCategory(categoryId, name, description);
+    }
+
+    private void handleToggleCategory() {
+        Integer categoryId = readInt("ID categoria: ");
+        if (categoryId == null) return;
+        boolean active = readYesNo("Impostare attiva? (s/n): ");
+        ownerController.toggleCategory(categoryId, active);
+    }
+
+    private void handleDeleteCategory() {
+        Integer categoryId = readInt("ID categoria: ");
+        if (categoryId == null) return;
+        ownerController.deleteCategory(categoryId);
+    }
+
     private void handleCreateDish() {
         System.out.print("Nome piatto: ");
         String name = scanner.nextLine().trim();
@@ -104,9 +148,7 @@ public class OwnerCLI {
     private void handleToggleDish() {
         Integer dishId = readInt("ID piatto: ");
         if (dishId == null) return;
-        boolean active = readYesNo("Impostare disponibile? (s/n): ");
-        ownerController.toggleDish(dishId, active);
-
+        ownerController.toggleDish(dishId, readYesNo("Impostare disponibile? (s/n): "));
     }
 
     private void handleUpdateDishPrice() {
@@ -115,6 +157,19 @@ public class OwnerCLI {
         BigDecimal price = readBigDecimal("Nuovo prezzo: ");
         if (price == null) return;
         ownerController.updateDishPrice(dishId, price.doubleValue());
+    }
+
+    private void handleUpdateDishDescription() {
+        Integer dishId = readInt("ID piatto: ");
+        if (dishId == null) return;
+        System.out.print("Nuova descrizione: ");
+        ownerController.updateDishDescription(dishId, scanner.nextLine().trim());
+    }
+
+    private void handleDeleteDish() {
+        Integer dishId = readInt("ID piatto: ");
+        if (dishId == null) return;
+        ownerController.deleteDish(dishId);
     }
 
     private void handleAddTable() {
@@ -128,17 +183,64 @@ public class OwnerCLI {
         ownerController.addTable(number, seats, joinable, location.isBlank() ? null : location);
     }
 
+    private void handleUpdateTable() {
+        Integer tableId = readInt("ID tavolo: ");
+        if (tableId == null) return;
+        Integer number = readInt("Numero tavolo: ");
+        if (number == null) return;
+        Integer seats = readInt("Numero posti: ");
+        if (seats == null) return;
+        boolean joinable = readYesNo("Tavolo unibile? (s/n): ");
+        System.out.print("Posizione: ");
+        String location = scanner.nextLine().trim();
+        ownerController.updateTable(tableId, number, seats, joinable, location.isBlank() ? null : location);
+    }
+
+    private void handleSetTableAvailability() {
+        Integer tableId = readInt("ID tavolo: ");
+        if (tableId == null) return;
+        ownerController.setTableAvailability(tableId, readYesNo("Disponibile? (s/n): "));
+    }
+
+    private void handleDeleteTable() {
+        Integer tableId = readInt("ID tavolo: ");
+        if (tableId == null) return;
+        ownerController.deleteTable(tableId);
+    }
+
     private void handleListSlots() {
-        boolean includeClosed = readYesNo("Mostrare anche slot chiusi? (s/n): ");
-        ownerController.listSlots(includeClosed);
+        ownerController.listSlots(readYesNo("Mostrare anche slot chiusi? (s/n): "));
     }
 
     private void handleAddSlot() {
-        LocalTime start = readTime("Orario inizio (HH:MM): ");
-        if (start == null) return;
-        LocalTime end = readTime("Orario fine (HH:MM): ");
-        if (end == null) return;
-        ownerController.configureSlot(start, end);
+        LocalTime s = readTime("Orario inizio (HH:MM): ");
+        if (s == null) return;
+        LocalTime e = readTime("Orario fine (HH:MM): ");
+        if (e == null) return;
+        ownerController.configureSlot(s, e);
+    }
+
+    private void handleUpdateSlot() {
+        Integer slotId = readInt("ID slot: ");
+        if (slotId == null) return;
+        LocalTime s = readTime("Orario inizio (HH:MM): ");
+        if (s == null) return;
+        LocalTime e = readTime("Orario fine (HH:MM): ");
+        if (e == null) return;
+        boolean closed = readYesNo("Slot chiuso? (s/n): ");
+        ownerController.updateSlot(slotId, s, e, closed);
+    }
+
+    private void handleSetSlotClosed() {
+        Integer slotId = readInt("ID slot: ");
+        if (slotId == null) return;
+        ownerController.setSlotClosed(slotId, readYesNo("Chiudere slot? (s/n): "));
+    }
+
+    private void handleDeleteSlot() {
+        Integer slotId = readInt("ID slot: ");
+        if (slotId == null) return;
+        ownerController.deleteSlot(slotId);
     }
 
     private void handleSearchDishes() {
@@ -179,6 +281,11 @@ public class OwnerCLI {
         ownerController.searchReservations(exactDate, startDate, endDate, customerId, slotId, minGuests, maxGuests, status);
     }
 
+    private void handleMarkNotificationAsRead() {
+        Integer notificationId = readInt("ID notifica: ");
+        if (notificationId == null) return;
+        ownerController.markNotificationAsRead(notificationId);
+    }
 
     private Integer readInt(String prompt) {
         System.out.print(prompt);

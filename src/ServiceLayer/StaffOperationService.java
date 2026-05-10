@@ -61,6 +61,7 @@ public class StaffOperationService {
                     "Transizione non valida: " + currentStatus + " -> " + newStatus
             );
         }
+        applyOrderTransition(order, newStatus);
         setOrderStatus(order, messageForStatus(newStatus));
     }
 

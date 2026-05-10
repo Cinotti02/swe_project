@@ -50,10 +50,11 @@ public final class AppBootstrap {
                 menuQueryService,
                 cartService,
                 orderService,
-                reservationService);
+                reservationService,
+                notificationDAO);
         CustomerProfileController customerProfileController = new CustomerProfileController(profileService);
-        OwnerController ownerController = new OwnerController(ownerAdminService, menuQueryService, searchService);
-        StaffController staffController = new StaffController(staffOperationService, searchService);
+        OwnerController ownerController = new OwnerController(ownerAdminService, menuQueryService, searchService, notificationDAO);
+        StaffController staffController = new StaffController(staffOperationService, searchService, notificationDAO);
 
         AuthCLI authCLI = new AuthCLI(authController, scanner);
         CustomerCLI customerCLI = new CustomerCLI(customerController, customerProfileController, scanner);

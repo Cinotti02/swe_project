@@ -35,6 +35,9 @@ public class CustomerCLI {
             System.out.println("7) Le mie prenotazioni");
             System.out.println("8) Cancella prenotazione");
             System.out.println("9) Profilo");
+            System.out.println("10) Mostra notifiche");
+            System.out.println("11) Mostra notifiche non lette");
+            System.out.println("12) Segna notifica come letta");
             System.out.println("0) Logout");
             System.out.print("Scelta: ");
 
@@ -49,6 +52,9 @@ public class CustomerCLI {
                 case "7" -> customerController.listReservations(user);
                 case "8" -> handleCancelReservation(user);
                 case "9" -> profileMenu(user);
+                case "10" -> customerController.showNotifications(user, false);
+                case "11" -> customerController.showNotifications(user, true);
+                case "12" -> handleMarkNotificationAsRead();
                 case "0" -> {
                     System.out.println("Logout effettuato.\n");
                     return;
@@ -104,6 +110,12 @@ public class CustomerCLI {
         Integer reservationId = readInt("ID prenotazione da cancellare: ");
         if (reservationId == null) return;
         customerController.cancelReservation(user, reservationId);
+    }
+
+    private void handleMarkNotificationAsRead() {
+        Integer notificationId = readInt("ID notifica: ");
+        if (notificationId == null) return;
+        customerController.markNotificationAsRead(notificationId);
     }
 
     private void profileMenu(User user) {

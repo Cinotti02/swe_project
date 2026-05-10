@@ -1,6 +1,7 @@
 package Controller;
 
 import DomainModel.menu.Category;
+import DomainModel.notification.Notification;
 import DomainModel.menu.Dish;
 import DomainModel.order.Order;
 import DomainModel.order.OrderStatus;
@@ -18,6 +19,7 @@ import DomainModel.valueObject.Money;
 import ServiceLayer.MenuQueryService;
 import ServiceLayer.OwnerAdminService;
 import ServiceLayer.SearchService;
+import ORM.NotificationDAO;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;
@@ -32,11 +34,38 @@ public class OwnerController {
     private final OwnerAdminService ownerAdminService;
     private final MenuQueryService menuQueryService;
     private final SearchService searchService;
+    private final NotificationDAO notificationDAO;
 
-    public OwnerController(OwnerAdminService ownerAdminService, MenuQueryService menuQueryService, SearchService searchService) {
+    public OwnerController(OwnerAdminService ownerAdminService, MenuQueryService menuQueryService, SearchService searchService, NotificationDAO notificationDAO) {
         this.ownerAdminService = ownerAdminService;
         this.menuQueryService = menuQueryService;
         this.searchService = searchService;
+        this.notificationDAO = notificationDAO;
+    }
+
+    public void showNotifications(int userId, boolean unreadOnly) {
+        try {
+            List<Notification> notifications = unreadOnly
+                    ? notificationDAO.getUnreadNotificationsForUser(userId)
+                    : notificationDAO.getNotificationsForUser(userId);
+            System.out.println(unreadOnly ? "=== Notifiche owner non lette ===" : "=== Notifiche owner ===");
+            if (notifications.isEmpty()) {
+                System.out.println("(nessuna notifica)");
+                return;
+            }
+            notifications.forEach(n -> System.out.println("#" + n.getId() + " | " + n.getType() + " | " + n.getStatus() + " | " + n.getMessage()));
+        } catch (SQLException e) {
+            System.err.println("Errore caricamento notifiche: " + e.getMessage());
+        }
+    }
+
+    public void markNotificationAsRead(int notificationId) {
+        try {
+            notificationDAO.markAsRead(notificationId);
+            System.out.println("Notifica segnata come letta");
+        } catch (SQLException | IllegalArgumentException e) {
+            System.err.println("Errore aggiornamento notifica: " + e.getMessage());
+        }
     }
 
     public void printMenuOverview() {
