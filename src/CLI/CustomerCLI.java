@@ -27,34 +27,36 @@ public class CustomerCLI {
         while (true) {
             System.out.println("=== Menu cliente ===");
             System.out.println("1) Visualizza menu");
-            System.out.println("2) Aggiungi piatto al carrello");
-            System.out.println("3) Mostra carrello");
-            System.out.println("4) Rimuovi piatto dal carrello");
-            System.out.println("5) Conferma ordine d'asporto");
-            System.out.println("6) Prenota un tavolo");
-            System.out.println("7) Le mie prenotazioni");
-            System.out.println("8) Cancella prenotazione");
-            System.out.println("9) Profilo");
-            System.out.println("10) Mostra notifiche");
-            System.out.println("11) Mostra notifiche non lette");
-            System.out.println("12) Segna notifica come letta");
+            System.out.println("2) Cerca piatto");
+            System.out.println("3) Aggiungi piatto al carrello");
+            System.out.println("4) Mostra carrello");
+            System.out.println("5) Rimuovi piatto dal carrello");
+            System.out.println("6) Conferma ordine d'asporto");
+            System.out.println("7) Prenota un tavolo");
+            System.out.println("8) Le mie prenotazioni");
+            System.out.println("9) Cancella prenotazione");
+            System.out.println("10) Profilo");
+            System.out.println("11) Mostra notifiche");
+            System.out.println("12) Mostra notifiche non lette");
+            System.out.println("13) Segna notifica come letta");
             System.out.println("0) Logout");
             System.out.print("Scelta: ");
 
             String choice = scanner.nextLine().trim();
             switch (choice) {
                 case "1" -> customerController.showMenu();
-                case "2" -> handleAddDish(user);
-                case "3" -> customerController.showCart(user);
-                case "4" -> handleRemoveDish(user);
-                case "5" -> handleCheckout(user);
-                case "6" -> handleReservation(user);
-                case "7" -> customerController.listReservations(user);
-                case "8" -> handleCancelReservation(user);
-                case "9" -> profileMenu(user);
-                case "10" -> handleShowNotifications(user, false);
-                case "11" -> handleShowNotifications(user, true);
-                case "12" -> handleMarkNotificationAsRead();
+                case "2" -> handleSearchDish();
+                case "3" -> handleAddDish(user);
+                case "4" -> customerController.showCart(user);
+                case "5" -> handleRemoveDish(user);
+                case "6" -> handleCheckout(user);
+                case "7" -> handleReservation(user);
+                case "8" -> customerController.listReservations(user);
+                case "9" -> handleCancelReservation(user);
+                case "10" -> profileMenu(user);
+                case "11" -> handleShowNotifications(user, false);
+                case "12" -> handleShowNotifications(user, true);
+                case "13" -> handleMarkNotificationAsRead();
                 case "0" -> {
                     System.out.println("Logout effettuato.\n");
                     return;
@@ -72,6 +74,12 @@ public class CustomerCLI {
         Integer qty = readInt("Quantità: ");
         if (qty == null) return;
         customerController.addDishToCart(user, dishId, qty);
+    }
+
+    private void handleSearchDish() {
+        System.out.print("Nome piatto (o parte del nome): ");
+        String query = scanner.nextLine().trim();
+        customerController.searchDishes(query.isBlank() ? null : query);
     }
 
     private void handleRemoveDish(User user) {
@@ -102,7 +110,7 @@ public class CustomerCLI {
             customerController.createReservation(user, date, slotId, guests, notes.isBlank() ? null : notes);
         }
         catch (IllegalStateException e) {
-            System.out.println("⚠️  Mi dispiace, non ci sono tavoli disponibili per questo orario.\n");
+            System.out.println("Mi dispiace, non ci sono tavoli disponibili per questo orario.\n");
         }
     }
 

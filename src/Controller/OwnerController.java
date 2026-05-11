@@ -111,7 +111,6 @@ public class OwnerController {
         }
     }
 
-
     public void addDish(String name, String description, double price, int categoryId) {
         try {
             Dish dish = ownerAdminService.createDish(name, description, new Money(price), categoryId);
@@ -154,7 +153,6 @@ public class OwnerController {
             System.err.println("Impossibile eliminare il piatto: " + e.getMessage());
         }
     }
-
 
     public void listTables() {
         try {
@@ -203,7 +201,6 @@ public class OwnerController {
             System.err.println("Impossibile eliminare il tavolo: " + e.getMessage());
         }
     }
-
 
     public void configureSlot(LocalTime startTime, LocalTime endTime) {
         try {

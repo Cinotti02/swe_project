@@ -61,6 +61,25 @@ public class CustomerController {
         }
     }
 
+    public void searchDishes(String query) {
+        try {
+            List<Dish> dishes = menuQueryService.searchDishes(query, true);
+            if (dishes.isEmpty()) {
+                System.out.println("Nessun piatto trovato");
+                return;
+            }
+            System.out.println("=== Risultati ricerca ===");
+            for (Dish dish : dishes) {
+                System.out.println("#" + dish.getId() + " - " + dish.getName() + " (" + dish.getPrice() + ")");
+                if (dish.getDescription() != null) {
+                    System.out.println("   " + dish.getDescription());
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Impossibile cercare i piatti: " + e.getMessage());
+        }
+    }
+
     public void addDishToCart(User user, int dishId, int quantity) {
         try {
             Dish dish = menuQueryService.findDishById(dishId)
