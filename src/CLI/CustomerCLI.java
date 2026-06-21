@@ -2,11 +2,20 @@ package CLI;
 
 import Controller.CustomerController;
 import Controller.CustomerProfileController;
+import DomainModel.menu.Category;
+import DomainModel.menu.Dish;
+import DomainModel.notification.Notification;
+import DomainModel.order.Order;
 import DomainModel.order.PaymentMethod;
+import DomainModel.reservation.Reservation;
+import DomainModel.reservation.Slot;
 import DomainModel.user.User;
 
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
+import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 public class CustomerCLI {
@@ -44,14 +53,14 @@ public class CustomerCLI {
 
             String choice = scanner.nextLine().trim();
             switch (choice) {
-                case "1" -> customerController.showMenu();
+                case "1" -> showMenu();
                 case "2" -> handleSearchDish();
                 case "3" -> handleAddDish(user);
-                case "4" -> customerController.showCart(user);
+                case "4" -> System.out.println(customerController.getCartSummary(user));
                 case "5" -> handleRemoveDish(user);
                 case "6" -> handleCheckout(user);
                 case "7" -> handleReservation(user);
-                case "8" -> customerController.listReservations(user);
+                case "8" -> handleListReservations(user);
                 case "9" -> handleCancelReservation(user);
                 case "10" -> profileMenu(user);
                 case "11" -> handleShowNotifications(user, false);
@@ -67,19 +76,28 @@ public class CustomerCLI {
     }
 
     private void handleAddDish(User user) {
-        customerController.showMenu();
+        showMenu();
         System.out.print("\n--- Aggiungi piatto al carrello ---\n");
         Integer dishId = readInt("ID piatto: ");
         if (dishId == null) return;
         Integer qty = readInt("Quantità: ");
         if (qty == null) return;
-        customerController.addDishToCart(user, dishId, qty);
+        try {
+            customerController.addDishToCart(user, dishId, qty);
+            System.out.println("Piatto aggiunto al carrello");
+        } catch (SQLException | IllegalArgumentException e) {
+            System.err.println("Errore: " + e.getMessage());
+        }
     }
 
     private void handleSearchDish() {
         System.out.print("Nome piatto (o parte del nome): ");
         String query = scanner.nextLine().trim();
-        customerController.searchDishes(query.isBlank() ? null : query);
+        try {
+            printDishes(customerController.searchDishes(query.isBlank() ? null : query));
+        } catch (SQLException e) {
+            System.err.println("Impossibile cercare i piatti: " + e.getMessage());
+        }
     }
 
     private void handleRemoveDish(User user) {
@@ -93,11 +111,16 @@ public class CustomerCLI {
         if (method == null) return;
         System.out.print("Note (facoltative): ");
         String notes = scanner.nextLine().trim();
-        customerController.checkoutTakeAway(user, method, notes.isBlank() ? null : notes);
+        try {
+            Order order = customerController.checkoutTakeAway(user, method, notes.isBlank() ? null : notes);
+            System.out.println("Ordine creato con ID " + order.getId());
+        } catch (SQLException | IllegalArgumentException | IllegalStateException e) {
+            System.err.println("Errore durante la creazione dell'ordine: " + e.getMessage());
+        }
     }
 
     private void handleReservation(User user) {
-        customerController.showAvailableSlots();
+        showAvailableSlots();
         LocalDate date = readDate("Data (YYYY-MM-DD): ");
         if (date == null) return;
         Integer slotId = readInt("ID slot: ");
@@ -107,17 +130,26 @@ public class CustomerCLI {
         System.out.print("Note (facoltative): ");
         String notes = scanner.nextLine().trim();
         try {
-            customerController.createReservation(user, date, slotId, guests, notes.isBlank() ? null : notes);
+            Reservation reservation = customerController.createReservation(
+                    user, date, slotId, guests, notes.isBlank() ? null : notes);
+            System.out.println("Prenotazione creata con ID " + reservation.getId());
         }
         catch (IllegalStateException e) {
             System.out.println("Mi dispiace, non ci sono tavoli disponibili per questo orario.\n");
+        } catch (SQLException | IllegalArgumentException e) {
+            System.err.println("Impossibile creare la prenotazione: " + e.getMessage());
         }
     }
 
     private void handleCancelReservation(User user) {
         Integer reservationId = readInt("ID prenotazione da cancellare: ");
         if (reservationId == null) return;
-        customerController.cancelReservation(user, reservationId);
+        try {
+            customerController.cancelReservation(user, reservationId);
+            System.out.println("Prenotazione annullata");
+        } catch (SQLException | IllegalArgumentException e) {
+            System.err.println("Errore durante l'annullamento: " + e.getMessage());
+        }
     }
 
 
@@ -155,7 +187,7 @@ public class CustomerCLI {
             System.out.print("Scelta: ");
             String choice = scanner.nextLine().trim();
             switch (choice) {
-                case "1" -> profileController.showProfile(user.getId());
+                case "1" -> handleShowProfile(user.getId());
                 case "2" -> handleProfileUpdate(user);
                 case "3" -> handleEmailChange(user);
                 case "0" -> {
@@ -173,10 +205,15 @@ public class CustomerCLI {
         String name = scanner.nextLine().trim();
         System.out.print("Cognome: ");
         String surname = scanner.nextLine().trim();
-        profileController.updateProfile(user,
-                username.isBlank() ? null : username,
-                name.isBlank() ? null : name,
-                surname.isBlank() ? null : surname);
+        try {
+            profileController.updateProfile(user,
+                    username.isBlank() ? null : username,
+                    name.isBlank() ? null : name,
+                    surname.isBlank() ? null : surname);
+            System.out.println("Profilo aggiornato");
+        } catch (SQLException | IllegalArgumentException e) {
+            System.err.println("Errore durante l'aggiornamento: " + e.getMessage());
+        }
     }
 
     private void handleEmailChange(User user) {
@@ -186,7 +223,86 @@ public class CustomerCLI {
             System.out.println("Email obbligatoria");
             return;
         }
-        profileController.changeEmail(user, email);
+        try {
+            profileController.changeEmail(user, email);
+            System.out.println("Email aggiornata");
+        } catch (SQLException | IllegalArgumentException e) {
+            System.err.println("Impossibile aggiornare l'email: " + e.getMessage());
+        }
+    }
+
+    private void showMenu() {
+        try {
+            Map<Category, List<Dish>> menu = customerController.getMenu();
+            System.out.println("=== MENU ===");
+            menu.forEach((category, dishes) -> {
+                System.out.println("-- " + category.getName() + " --");
+                if (dishes.isEmpty()) System.out.println("(Nessun piatto disponibile)");
+                printDishRows(dishes);
+            });
+        } catch (SQLException e) {
+            System.err.println("Impossibile caricare il menu: " + e.getMessage());
+        }
+    }
+
+    private void printDishes(List<Dish> dishes) {
+        if (dishes.isEmpty()) {
+            System.out.println("Nessun piatto trovato");
+            return;
+        }
+        System.out.println("=== Risultati ricerca ===");
+        printDishRows(dishes);
+    }
+
+    private void printDishRows(List<Dish> dishes) {
+        for (Dish dish : dishes) {
+            System.out.println("#" + dish.getId() + " - " + dish.getName() + " (" + dish.getPrice() + ")");
+            if (dish.getDescription() != null) System.out.println("   " + dish.getDescription());
+        }
+    }
+
+    private void handleListReservations(User user) {
+        try {
+            List<Reservation> reservations = customerController.listReservations(user);
+            if (reservations.isEmpty()) {
+                System.out.println("Non hai prenotazioni attive");
+                return;
+            }
+            System.out.println("=== Le tue prenotazioni ===");
+            reservations.forEach(reservation -> System.out.println("#" + reservation.getId() + " - "
+                    + reservation.getReservDate() + " - Stato: " + reservation.getStatus()));
+        } catch (SQLException e) {
+            System.err.println("Impossibile caricare le prenotazioni: " + e.getMessage());
+        }
+    }
+
+    private void showAvailableSlots() {
+        try {
+            List<Slot> slots = customerController.getAvailableSlots();
+            if (slots.isEmpty()) {
+                System.out.println("Nessuno slot disponibile al momento");
+                return;
+            }
+            System.out.println("=== SLOT DISPONIBILI ===");
+            slots.forEach(slot -> System.out.println(
+                    "#" + slot.getId() + " " + slot.getStartTime() + "-" + slot.getEndTime()));
+        } catch (SQLException e) {
+            System.err.println("Impossibile recuperare gli slot: " + e.getMessage());
+        }
+    }
+
+    private void handleShowProfile(int userId) {
+        try {
+            User user = profileController.getProfile(userId);
+            System.out.println("=== Profilo ===");
+            System.out.println("Username: " + user.getUsername());
+            System.out.println("Email: " + user.getEmailValue());
+            System.out.println("Nome: " + user.getName());
+            System.out.println("Cognome: " + user.getSurname());
+            System.out.println("Fidelity points: " + user.getFidelityPoints());
+        } catch (SQLException e) {
+            System.err.println("Impossibile caricare il profilo: " + e.getMessage());
+        }
     }
 
     private Integer readInt(String prompt) {

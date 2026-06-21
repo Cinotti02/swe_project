@@ -1,13 +1,18 @@
 package CLI;
 
 import Controller.StaffController;
+import DomainModel.order.Order;
 import DomainModel.order.OrderStatus;
 import DomainModel.order.PaymentMethod;
+import DomainModel.reservation.Reservation;
 import DomainModel.reservation.ReservationStatus;
 import DomainModel.user.User;
 
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
+import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 public class StaffCLI {
@@ -44,7 +49,7 @@ public class StaffCLI {
             System.out.print("Scelta: ");
             String choice = scanner.nextLine().trim();
             switch (choice) {
-                case "1" -> staffController.showKitchenQueue();
+                case "1" -> showKitchenQueue();
                 case "2" -> handleOrderUpdate(user);
                 case "3" -> handleSearchOrders();
                 case "4" -> handleReservationList();
@@ -71,7 +76,12 @@ public class StaffCLI {
         OrderStatus targetStatus = readOrderStatus();
         if (targetStatus == null) return;
 
-        staffController.updateOrderStatus(orderId, targetStatus, user.getId());
+        try {
+            staffController.updateOrderStatus(orderId, targetStatus, user.getId());
+            System.out.println("Stato ordine aggiornato");
+        } catch (SQLException | IllegalArgumentException e) {
+            System.err.println("Errore nel cambio stato ordine: " + e.getMessage());
+        }
     }
 
     private OrderStatus readOrderStatus() {
@@ -98,16 +108,25 @@ public class StaffCLI {
     private void handleReservationList() {
         LocalDate date = readDate("Data (YYYY-MM-DD): ");
         if (date == null) return;
-        staffController.showReservations(date);
+        try {
+            printReservationsForDate(date, staffController.getReservations(date));
+        } catch (SQLException e) {
+            System.err.println("Impossibile caricare le prenotazioni: " + e.getMessage());
+        }
     }
 
     private void handleReservationAction(Action action) {
         Integer reservationId = readInt("ID prenotazione: ");
         if (reservationId == null) return;
-        switch (action) {
-            case CONFIRM -> staffController.confirmReservation(reservationId);
-            case CHECK_IN -> staffController.registerCheckIn(reservationId);
-            case NO_SHOW -> staffController.markNoShow(reservationId);
+        try {
+            switch (action) {
+                case CONFIRM -> staffController.confirmReservation(reservationId);
+                case CHECK_IN -> staffController.registerCheckIn(reservationId);
+                case NO_SHOW -> staffController.markNoShow(reservationId);
+            }
+            System.out.println("Prenotazione aggiornata");
+        } catch (SQLException | IllegalArgumentException e) {
+            System.err.println("Errore aggiornamento prenotazione: " + e.getMessage());
         }
     }
 
@@ -120,7 +139,12 @@ public class StaffCLI {
         LocalDate startDate = readOptionalDate("Data inizio creazione YYYY-MM-DD (invio per saltare): ");
         LocalDate endDate = readOptionalDate("Data fine creazione YYYY-MM-DD (invio per saltare): ");
 
-        staffController.searchOrders(customerId, status, paymentMethod, categoryId, startDate, endDate);
+        try {
+            printOrders(staffController.searchOrders(
+                    customerId, status, paymentMethod, categoryId, startDate, endDate));
+        } catch (SQLException e) {
+            System.err.println("Errore nella ricerca ordini: " + e.getMessage());
+        }
     }
 
     private void handleSearchReservations() {
@@ -134,7 +158,12 @@ public class StaffCLI {
         Integer maxGuests = readOptionalInt("Ospiti massimi (invio per saltare): ");
         ReservationStatus status = readOptionalReservationStatus();
 
-        staffController.searchReservations(exactDate, startDate, endDate, customerId, slotId, minGuests, maxGuests, status);
+        try {
+            printSearchReservations(staffController.searchReservations(
+                    exactDate, startDate, endDate, customerId, slotId, minGuests, maxGuests, status));
+        } catch (SQLException e) {
+            System.err.println("Errore nella ricerca prenotazioni: " + e.getMessage());
+        }
     }
 
     private Integer readInt(String prompt) {
@@ -248,6 +277,88 @@ public class StaffCLI {
         try { staffController.markNotificationAsRead(notificationId); System.out.println("Notifica segnata come letta"); } catch (Exception e) { System.err.println("Errore aggiornamento notifica: " + e.getMessage()); }
     }
 
+    private void showKitchenQueue() {
+        try {
+            Map<OrderStatus, List<Order>> queue = staffController.getKitchenQueue();
+            System.out.println("\n=== CODA CUCINA ===");
+            System.out.println("\n== ORDINI ATTIVI ==");
+            printOrderBucket("CREATI (DA PREPARARE)", queue.get(OrderStatus.CREATED));
+            printOrderBucket("IN PREPARAZIONE", queue.get(OrderStatus.PREPARING));
+            printOrderBucket("PRONTI", queue.get(OrderStatus.READY));
+            System.out.println("\n== ORDINI CONCLUSI ==");
+            printOrderBucket("RITIRATI", queue.get(OrderStatus.RETIRED));
+            printOrderBucket("ANNULLATI", queue.get(OrderStatus.CANCELLED));
+        } catch (SQLException e) {
+            System.err.println("Impossibile caricare la coda cucina: " + e.getMessage());
+        }
+    }
+
+    private void printOrderBucket(String title, List<Order> orders) {
+        System.out.println("\n--- " + title + " ---");
+        if (orders == null || orders.isEmpty()) {
+            System.out.println("(nessun ordine)");
+            return;
+        }
+        System.out.printf("%-8s %-12s %-10s %-12s %-20s%n",
+                "ID", "Cliente", "Pagamento", "Totale", "Creato il");
+        for (Order order : orders) {
+            String payment = order.getPaymentMethod() != null
+                    ? order.getPaymentMethod().name() : "-";
+            String total = order.getTotalAmount() != null
+                    ? order.getTotalAmount().toString() : "-";
+            String createdAt = order.getCreatedAt() != null
+                    ? order.getCreatedAt().toString() : "-";
+            int customerId = order.getCustomer() != null ? order.getCustomer().getId() : -1;
+            System.out.printf("#%-7d %-12d %-10s %-12s %-20s%n",
+                    order.getId(), customerId, payment, total, createdAt);
+        }
+    }
+
+    private void printReservationsForDate(LocalDate date, List<Reservation> reservations) {
+        System.out.println("=== Prenotazioni per " + date + " ===");
+        reservations.forEach(reservation -> System.out.println(
+                "#" + reservation.getId()
+                        + " ospiti:" + reservation.getNumberOfGuests()
+                        + " slot:" + reservation.getTimeSlot().getStartTime()
+                        + " stato:" + reservation.getStatus()));
+    }
+
+    private void printOrders(List<Order> orders) {
+        System.out.println("=== RISULTATI ORDINI ===");
+        if (orders.isEmpty()) {
+            System.out.println("(nessun ordine trovato)");
+            return;
+        }
+        orders.forEach(order -> {
+            int customerId = order.getCustomer() != null ? order.getCustomer().getId() : -1;
+            System.out.println("#" + order.getId()
+                    + " | customer:" + customerId
+                    + " | stato:" + order.getStatus()
+                    + " | payment:" + order.getPaymentMethod()
+                    + " | totale:" + order.getTotalAmount()
+                    + " | creato:" + order.getCreatedAt());
+        });
+    }
+
+    private void printSearchReservations(List<Reservation> reservations) {
+        System.out.println("=== RISULTATI PRENOTAZIONI ===");
+        if (reservations.isEmpty()) {
+            System.out.println("(nessuna prenotazione trovata)");
+            return;
+        }
+        reservations.forEach(reservation -> {
+            int customerId = reservation.getCustomer() != null
+                    ? reservation.getCustomer().getId() : -1;
+            Integer slotId = reservation.getTimeSlot() != null
+                    ? reservation.getTimeSlot().getId() : null;
+            System.out.println("#" + reservation.getId()
+                    + " | customer:" + customerId
+                    + " | data:" + reservation.getReservDate().toLocalDate()
+                    + " | slot:" + slotId
+                    + " | guests:" + reservation.getNumberOfGuests()
+                    + " | stato:" + reservation.getStatus());
+        });
+    }
 
 
     private enum Action {

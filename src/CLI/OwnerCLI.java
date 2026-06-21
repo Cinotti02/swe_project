@@ -1,15 +1,25 @@
 package CLI;
 
 import Controller.OwnerController;
+import DomainModel.menu.Category;
+import DomainModel.menu.Dish;
+import DomainModel.order.Order;
 import DomainModel.order.OrderStatus;
 import DomainModel.order.PaymentMethod;
+import DomainModel.reservation.Reservation;
 import DomainModel.reservation.ReservationStatus;
+import DomainModel.reservation.Slot;
+import DomainModel.reservation.Table;
 import DomainModel.user.User;
 
 import java.math.BigDecimal;
+import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
+import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 public class OwnerCLI {
@@ -55,7 +65,7 @@ public class OwnerCLI {
             System.out.print("Scelta: ");
             String choice = scanner.nextLine().trim();
             switch (choice) {
-                case "1" -> ownerController.printMenuOverview();
+                case "1" -> showMenuOverview();
                 case "2" -> handleCreateCategory();
                 case "3" -> handleUpdateCategory();
                 case "4" -> handleToggleCategory();
@@ -65,7 +75,7 @@ public class OwnerCLI {
                 case "8" -> handleUpdateDishPrice();
                 case "9" -> handleUpdateDishDescription();
                 case "10" -> handleDeleteDish();
-                case "11" -> ownerController.listTables();
+                case "11" -> handleListTables();
                 case "12" -> handleAddTable();
                 case "13" -> handleUpdateTable();
                 case "14" -> handleSetTableAvailability();
@@ -130,8 +140,13 @@ public class OwnerCLI {
             System.out.println("Il nome è obbligatorio\n");
             return;
         }
-        ownerController.addCategory(name, desc);
-        ownerController.notifyOwnerAction(currentUserId, "Categoria creata: " + name);
+        try {
+            Category category = ownerController.addCategory(name, desc);
+            System.out.println("Categoria creata con id " + category.getId());
+            ownerController.notifyOwnerAction(currentUserId, "Categoria creata: " + name);
+        } catch (SQLException | IllegalArgumentException e) {
+            System.err.println("Impossibile creare la categoria: " + e.getMessage());
+        }
     }
 
     private void handleUpdateCategory() {
@@ -145,20 +160,23 @@ public class OwnerCLI {
             System.out.println("Nome obbligatorio\n");
             return;
         }
-        ownerController.renameCategory(categoryId, name, description);
+        execute("Categoria aggiornata", "Impossibile aggiornare la categoria",
+                () -> ownerController.renameCategory(categoryId, name, description));
     }
 
     private void handleToggleCategory() {
         Integer categoryId = readInt("ID categoria: ");
         if (categoryId == null) return;
         boolean active = readYesNo("Impostare attiva? (s/n): ");
-        ownerController.toggleCategory(categoryId, active);
+        execute("Stato categoria aggiornato", "Impossibile aggiornare lo stato categoria",
+                () -> ownerController.toggleCategory(categoryId, active));
     }
 
     private void handleDeleteCategory() {
         Integer categoryId = readInt("ID categoria: ");
         if (categoryId == null) return;
-        ownerController.deleteCategory(categoryId);
+        execute("Categoria eliminata", "Impossibile eliminare la categoria",
+                () -> ownerController.deleteCategory(categoryId));
     }
 
     private void handleCreateDish() {
@@ -174,13 +192,20 @@ public class OwnerCLI {
         if (price == null) return;
         Integer categoryId = readInt("ID categoria: ");
         if (categoryId == null) return;
-        ownerController.addDish(name, description, price.doubleValue(), categoryId);
+        try {
+            Dish dish = ownerController.addDish(name, description, price.doubleValue(), categoryId);
+            System.out.println("Piatto creato con id " + dish.getId());
+        } catch (SQLException | IllegalArgumentException e) {
+            System.err.println("Impossibile creare il piatto: " + e.getMessage());
+        }
     }
 
     private void handleToggleDish() {
         Integer dishId = readInt("ID piatto: ");
         if (dishId == null) return;
-        ownerController.toggleDish(dishId, readYesNo("Impostare disponibile? (s/n): "));
+        boolean active = readYesNo("Impostare disponibile? (s/n): ");
+        execute("Stato piatto aggiornato", "Errore durante l'aggiornamento del piatto",
+                () -> ownerController.toggleDish(dishId, active));
     }
 
     private void handleUpdateDishPrice() {
@@ -188,20 +213,24 @@ public class OwnerCLI {
         if (dishId == null) return;
         BigDecimal price = readBigDecimal("Nuovo prezzo: ");
         if (price == null) return;
-        ownerController.updateDishPrice(dishId, price.doubleValue());
+        execute("Prezzo piatto aggiornato", "Impossibile aggiornare il prezzo",
+                () -> ownerController.updateDishPrice(dishId, price.doubleValue()));
     }
 
     private void handleUpdateDishDescription() {
         Integer dishId = readInt("ID piatto: ");
         if (dishId == null) return;
         System.out.print("Nuova descrizione: ");
-        ownerController.updateDishDescription(dishId, scanner.nextLine().trim());
+        String description = scanner.nextLine().trim();
+        execute("Descrizione piatto aggiornata", "Impossibile aggiornare la descrizione",
+                () -> ownerController.updateDishDescription(dishId, description));
     }
 
     private void handleDeleteDish() {
         Integer dishId = readInt("ID piatto: ");
         if (dishId == null) return;
-        ownerController.deleteDish(dishId);
+        execute("Piatto eliminato", "Impossibile eliminare il piatto",
+                () -> ownerController.deleteDish(dishId));
     }
 
     private void handleAddTable() {
@@ -212,7 +241,13 @@ public class OwnerCLI {
         boolean joinable = readYesNo("Tavolo unibile? (s/n): ");
         System.out.print("Posizione: ");
         String location = scanner.nextLine().trim();
-        ownerController.addTable(number, seats, joinable, location.isBlank() ? null : location);
+        try {
+            Table table = ownerController.addTable(
+                    number, seats, joinable, location.isBlank() ? null : location);
+            System.out.println("Tavolo creato con id " + table.getId());
+        } catch (SQLException | IllegalArgumentException e) {
+            System.err.println("Impossibile creare il tavolo: " + e.getMessage());
+        }
     }
 
     private void handleUpdateTable() {
@@ -225,23 +260,33 @@ public class OwnerCLI {
         boolean joinable = readYesNo("Tavolo unibile? (s/n): ");
         System.out.print("Posizione: ");
         String location = scanner.nextLine().trim();
-        ownerController.updateTable(tableId, number, seats, joinable, location.isBlank() ? null : location);
+        execute("Tavolo aggiornato", "Impossibile aggiornare il tavolo",
+                () -> ownerController.updateTable(
+                        tableId, number, seats, joinable, location.isBlank() ? null : location));
     }
 
     private void handleSetTableAvailability() {
         Integer tableId = readInt("ID tavolo: ");
         if (tableId == null) return;
-        ownerController.setTableAvailability(tableId, readYesNo("Disponibile? (s/n): "));
+        boolean available = readYesNo("Disponibile? (s/n): ");
+        execute("Disponibilità tavolo aggiornata", "Impossibile aggiornare disponibilità tavolo",
+                () -> ownerController.setTableAvailability(tableId, available));
     }
 
     private void handleDeleteTable() {
         Integer tableId = readInt("ID tavolo: ");
         if (tableId == null) return;
-        ownerController.deleteTable(tableId);
+        execute("Tavolo eliminato", "Impossibile eliminare il tavolo",
+                () -> ownerController.deleteTable(tableId));
     }
 
     private void handleListSlots() {
-        ownerController.listSlots(readYesNo("Mostrare anche slot chiusi? (s/n): "));
+        boolean includeClosed = readYesNo("Mostrare anche slot chiusi? (s/n): ");
+        try {
+            printSlots(ownerController.listSlots(includeClosed));
+        } catch (SQLException e) {
+            System.err.println("Impossibile caricare gli slot: " + e.getMessage());
+        }
     }
 
     private void handleAddSlot() {
@@ -249,7 +294,12 @@ public class OwnerCLI {
         if (s == null) return;
         LocalTime e = readTime("Orario fine (HH:MM): ");
         if (e == null) return;
-        ownerController.configureSlot(s, e);
+        try {
+            Slot slot = ownerController.configureSlot(s, e);
+            System.out.println("Slot creato con id " + slot.getId());
+        } catch (SQLException | IllegalArgumentException ex) {
+            System.err.println("Impossibile creare lo slot: " + ex.getMessage());
+        }
     }
 
     private void handleUpdateSlot() {
@@ -260,19 +310,23 @@ public class OwnerCLI {
         LocalTime e = readTime("Orario fine (HH:MM): ");
         if (e == null) return;
         boolean closed = readYesNo("Slot chiuso? (s/n): ");
-        ownerController.updateSlot(slotId, s, e, closed);
+        execute("Slot aggiornato", "Impossibile aggiornare lo slot",
+                () -> ownerController.updateSlot(slotId, s, e, closed));
     }
 
     private void handleSetSlotClosed() {
         Integer slotId = readInt("ID slot: ");
         if (slotId == null) return;
-        ownerController.setSlotClosed(slotId, readYesNo("Chiudere slot? (s/n): "));
+        boolean closed = readYesNo("Chiudere slot? (s/n): ");
+        execute("Stato slot aggiornato", "Impossibile aggiornare stato slot",
+                () -> ownerController.setSlotClosed(slotId, closed));
     }
 
     private void handleDeleteSlot() {
         Integer slotId = readInt("ID slot: ");
         if (slotId == null) return;
-        ownerController.deleteSlot(slotId);
+        execute("Slot eliminato", "Impossibile eliminare lo slot",
+                () -> ownerController.deleteSlot(slotId));
     }
 
     private void handleSearchDishes() {
@@ -284,7 +338,12 @@ public class OwnerCLI {
         BigDecimal minPrice = readOptionalBigDecimal("Prezzo minimo (invio per saltare): ");
         BigDecimal maxPrice = readOptionalBigDecimal("Prezzo massimo (invio per saltare): ");
 
-        ownerController.searchDishes(name.isBlank() ? null : name, categoryId, onlyAvailable, minPrice, maxPrice);
+        try {
+            printDishes(ownerController.searchDishes(
+                    name.isBlank() ? null : name, categoryId, onlyAvailable, minPrice, maxPrice));
+        } catch (SQLException e) {
+            System.err.println("Errore nella ricerca piatti: " + e.getMessage());
+        }
     }
 
     private void handleSearchOrders() {
@@ -296,7 +355,12 @@ public class OwnerCLI {
         LocalDate startDate = readOptionalDate("Data inizio creazione YYYY-MM-DD (invio per saltare): ");
         LocalDate endDate = readOptionalDate("Data fine creazione YYYY-MM-DD (invio per saltare): ");
 
-        ownerController.searchOrders(customerId, status, paymentMethod, categoryId, startDate, endDate);
+        try {
+            printOrders(ownerController.searchOrders(
+                    customerId, status, paymentMethod, categoryId, startDate, endDate));
+        } catch (SQLException e) {
+            System.err.println("Errore nella ricerca ordini: " + e.getMessage());
+        }
     }
 
     private void handleSearchReservations() {
@@ -310,13 +374,124 @@ public class OwnerCLI {
         Integer maxGuests = readOptionalInt("Ospiti massimi (invio per saltare): ");
         ReservationStatus status = readOptionalReservationStatus();
 
-        ownerController.searchReservations(exactDate, startDate, endDate, customerId, slotId, minGuests, maxGuests, status);
+        try {
+            printReservations(ownerController.searchReservations(
+                    exactDate, startDate, endDate, customerId, slotId, minGuests, maxGuests, status));
+        } catch (SQLException e) {
+            System.err.println("Errore nella ricerca prenotazioni: " + e.getMessage());
+        }
     }
 
     private void handleMarkNotificationAsRead() {
         Integer notificationId = readInt("ID notifica: ");
         if (notificationId == null) return;
         try { ownerController.markNotificationAsRead(notificationId); System.out.println("Notifica segnata come letta"); } catch (Exception e) { System.err.println("Errore aggiornamento notifica: " + e.getMessage()); }
+    }
+
+    private void showMenuOverview() {
+        try {
+            Map<Category, List<Dish>> menu = ownerController.getMenuOverview();
+            System.out.println("=== MENU COMPLETO ===");
+            menu.forEach((category, dishes) -> {
+                System.out.println(category.getName() + " ("
+                        + (category.isActive() ? "attiva" : "disattiva") + ")");
+                dishes.forEach(dish -> System.out.println("  "
+                        + (dish.isAvailable() ? "[ON]" : "[OFF]")
+                        + " #" + dish.getId() + " " + dish.getName() + " - " + dish.getPrice()));
+            });
+        } catch (SQLException e) {
+            System.err.println("Errore nel caricamento del menu: " + e.getMessage());
+        }
+    }
+
+    private void handleListTables() {
+        try {
+            System.out.println("=== TAVOLI ===");
+            ownerController.listTables().forEach(table -> System.out.println(
+                    "#" + table.getId() + " n." + table.getNumber()
+                            + " posti:" + table.getSeats()
+                            + " joinable:" + table.isJoinable()
+                            + " disponibile:" + table.isAvailable()));
+        } catch (SQLException e) {
+            System.err.println("Impossibile caricare i tavoli: " + e.getMessage());
+        }
+    }
+
+    private void printSlots(List<Slot> slots) {
+        System.out.println("=== SLOT ===");
+        slots.forEach(slot -> System.out.println("#" + slot.getId() + " "
+                + slot.getStartTime() + "-" + slot.getEndTime()
+                + (slot.isClosed() ? " [CHIUSO]" : "")));
+    }
+
+    private void printDishes(List<Dish> dishes) {
+        System.out.println("=== RISULTATI PIATTI ===");
+        if (dishes.isEmpty()) {
+            System.out.println("(nessun piatto trovato)");
+            return;
+        }
+        dishes.forEach(dish -> {
+            String category = dish.getCategory() != null
+                    ? String.valueOf(dish.getCategory().getId()) : "-";
+            System.out.println("#" + dish.getId() + " " + dish.getName()
+                    + " | cat:" + category
+                    + " | prezzo:" + dish.getPrice()
+                    + " | disponibile:" + dish.isAvailable());
+        });
+    }
+
+    private void printOrders(List<Order> orders) {
+        System.out.println("=== RISULTATI ORDINI ===");
+        if (orders.isEmpty()) {
+            System.out.println("(nessun ordine trovato)");
+            return;
+        }
+        orders.forEach(order -> {
+            int customerId = order.getCustomer() != null ? order.getCustomer().getId() : -1;
+            LocalDateTime createdAt = order.getCreatedAt();
+            System.out.println("#" + order.getId()
+                    + " | customer:" + customerId
+                    + " | stato:" + order.getStatus()
+                    + " | payment:" + order.getPaymentMethod()
+                    + " | totale:" + order.getTotalAmount()
+                    + " | creato:" + (createdAt != null ? createdAt : "-"));
+        });
+    }
+
+    private void printReservations(List<Reservation> reservations) {
+        System.out.println("=== RISULTATI PRENOTAZIONI ===");
+        if (reservations.isEmpty()) {
+            System.out.println("(nessuna prenotazione trovata)");
+            return;
+        }
+        reservations.forEach(reservation -> {
+            int customerId = reservation.getCustomer() != null
+                    ? reservation.getCustomer().getId() : -1;
+            Integer slotId = reservation.getTimeSlot() != null
+                    ? reservation.getTimeSlot().getId() : null;
+            System.out.println("#" + reservation.getId()
+                    + " | customer:" + customerId
+                    + " | data:" + reservation.getReservDate().toLocalDate()
+                    + " | slot:" + slotId
+                    + " | guests:" + reservation.getNumberOfGuests()
+                    + " | stato:" + reservation.getStatus());
+        });
+    }
+
+    private void execute(String successMessage,
+                         String errorPrefix,
+                         ControllerAction action) {
+        try {
+            action.run();
+            System.out.println(successMessage);
+        } catch (SQLException | IllegalArgumentException e) {
+            System.err.println(errorPrefix + ": " + e.getMessage());
+        }
+    }
+
+    @FunctionalInterface
+    private interface ControllerAction {
+        void run() throws SQLException;
     }
 
     private Integer readInt(String prompt) {
