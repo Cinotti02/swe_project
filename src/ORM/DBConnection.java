@@ -18,9 +18,9 @@ public final class DBConnection {
     private DBConnection() {
         Properties props = loadProperties();
 
-        String url = readConfig("DB_URL", "db.URL", props);
-        String user = readConfig("DB_USER", "db.USER", props);
-        String password = readConfig("DB_PASSWORD", "db.PASSWORD", props);
+        String url = readConfig("db.url", "DB_URL", "db.URL", props);
+        String user = readConfig("db.user", "DB_USER", "db.USER", props);
+        String password = readConfig("db.password", "DB_PASSWORD", "db.PASSWORD", props);
 
         if (url == null || user == null || password == null) {
             throw new IllegalStateException("Database configuration is incomplete");
@@ -71,7 +71,15 @@ public final class DBConnection {
         return props;
     }
 
-    private static String readConfig(String envKey, String propKey, Properties props) {
+    private static String readConfig(String systemKey,
+                                     String envKey,
+                                     String propKey,
+                                     Properties props) {
+        String systemValue = System.getProperty(systemKey);
+        if (systemValue != null && !systemValue.isBlank()) {
+            return systemValue.trim();
+        }
+
         String envValue = System.getenv(envKey);
         if (envValue != null && !envValue.isBlank()) {
             return envValue.trim();

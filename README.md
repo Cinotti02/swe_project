@@ -50,6 +50,12 @@ Da `psql` esegui:
 \i sql/seed.sql
 ```
 
+Per aggiornare un database già esistente:
+
+```sql
+\i sql/migrations/V2__prevent_double_table_booking.sql
+```
+
 ## Build con Maven
 
 Le dipendenze sono dichiarate in `pom.xml` e vengono scaricate automaticamente.
