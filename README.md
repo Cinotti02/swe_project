@@ -54,6 +54,8 @@ Per aggiornare un database già esistente:
 
 ```sql
 \i sql/migrations/V2__prevent_double_table_booking.sql
+\i sql/migrations/V3__normalize_legacy_notification_types.sql
+\i sql/migrations/V4__normalize_legacy_notification_statuses.sql
 ```
 
 ## Build con Maven

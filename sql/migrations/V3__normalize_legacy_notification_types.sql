@@ -1,0 +1,3 @@
+UPDATE notifications
+SET type = 'UPDATE'
+WHERE type NOT IN ('CONFIRMATION', 'REMINDER', 'UPDATE', 'ALERT');

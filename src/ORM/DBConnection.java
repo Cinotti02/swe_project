@@ -7,6 +7,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Properties;
 
@@ -14,11 +15,12 @@ public final class DBConnection {
     private static final String PROPERTIES_FILE = "src/ORM/db.properties";
     private static final String CLASSPATH_PROPERTIES_FILE = "ORM/db.properties";
     private final DataSource dataSource;
+    private final String schema;
 
     private DBConnection() {
         Properties props = loadProperties();
 
-        String url = readConfig("db.url", "DB_URL", "db.URL", props);
+        String url = normalizeUrl(readConfig("db.url", "DB_URL", "db.URL", props));
         String user = readConfig("db.user", "DB_USER", "db.USER", props);
         String password = readConfig("db.password", "DB_PASSWORD", "db.PASSWORD", props);
 
@@ -26,11 +28,14 @@ public final class DBConnection {
             throw new IllegalStateException("Database configuration is incomplete");
         }
 
+        this.schema = readCurrentSchema(url);
+
         PGPoolingDataSource ds = new PGPoolingDataSource();
         ds.setDataSourceName("dineup-pool");
         ds.setUrl(url);
         ds.setUser(user);
         ds.setPassword(password);
+        ds.setCurrentSchema(schema);
         ds.setInitialConnections(4);
         ds.setMaxConnections(20);
         this.dataSource = ds;
@@ -45,7 +50,17 @@ public final class DBConnection {
     }
 
     public static Connection getConnection() throws SQLException {
-        return getInstance().dataSource.getConnection();
+        DBConnection instance = getInstance();
+        Connection connection = instance.dataSource.getConnection();
+        try (PreparedStatement statement =
+                     connection.prepareStatement("SELECT set_config('search_path', ?, false)")) {
+            statement.setString(1, instance.schema);
+            statement.execute();
+        } catch (SQLException e) {
+            connection.close();
+            throw e;
+        }
+        return connection;
     }
 
     private static Properties loadProperties() {
@@ -90,5 +105,26 @@ public final class DBConnection {
             return propertyValue.trim();
         }
         return null;
+    }
+
+    private static String normalizeUrl(String url) {
+        if (url == null || url.toLowerCase().contains("currentschema=")) {
+            return url;
+        }
+        return url + (url.contains("?") ? "&" : "?") + "currentSchema=public";
+    }
+
+    private static String readCurrentSchema(String url) {
+        if (url == null) {
+            return "public";
+        }
+        String lower = url.toLowerCase();
+        int start = lower.indexOf("currentschema=");
+        if (start < 0) {
+            return "public";
+        }
+        start += "currentschema=".length();
+        int end = url.indexOf('&', start);
+        return url.substring(start, end >= 0 ? end : url.length());
     }
 }
