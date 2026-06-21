@@ -26,14 +26,13 @@ public final class AppBootstrap {
         ReservationDAO reservationDAO = new ReservationDAO();
         NotificationDAO notificationDAO = new NotificationDAO();
         OrderDAO orderDAO = new OrderDAO();
-        OrderItemDAO orderItemDAO = new OrderItemDAO();
 
         AuthService authService = new AuthService(userDAO);
         AuthController authController = new AuthController(authService);
 
         MenuQueryService menuQueryService = new MenuQueryService(dishDAO, categoryDAO);
         CartService cartService = new CartService();
-        OrderService orderService = new OrderService(orderDAO, orderItemDAO);
+        OrderService orderService = new OrderService(orderDAO);
         TableAllocationService tableAllocationService = new TableAllocationService();
         ReservationService reservationService = new ReservationService(
                 reservationDAO,

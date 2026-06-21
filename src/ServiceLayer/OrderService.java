@@ -8,7 +8,6 @@ import DomainModel.search.OrderSearchParameters;
 import DomainModel.user.User;
 import DomainModel.valueObject.Money;
 import ORM.OrderDAO;
-import ORM.OrderItemDAO;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -24,11 +23,9 @@ import java.util.List;
 public class OrderService {
 
     private final OrderDAO orderDAO;
-    private final OrderItemDAO orderItemDAO;
 
-    public OrderService(OrderDAO orderDAO, OrderItemDAO orderItemDAO) {
+    public OrderService(OrderDAO orderDAO) {
         this.orderDAO = orderDAO;
-        this.orderItemDAO = orderItemDAO;
     }
 
     // ---------------------------------------------------------

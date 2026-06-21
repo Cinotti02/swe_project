@@ -11,7 +11,6 @@ import DomainModel.user.Role;
 import DomainModel.user.User;
 import DomainModel.valueObject.Email;
 import ORM.OrderDAO;
-import ORM.OrderItemDAO;
 import ServiceLayer.OrderService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,7 +31,7 @@ class OrderServiceTest {
     @BeforeEach
     void setUp() {
         orderDAO = new FakeOrderDAO();
-        service = new OrderService(orderDAO, new OrderItemDAO());
+        service = new OrderService(orderDAO);
         customer = new User(
                 "mario",
                 new Email("mario@example.com"),
