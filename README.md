@@ -50,17 +50,23 @@ Da `psql` esegui:
 \i sql/seed.sql
 ```
 
-## Compilazione
+## Build con Maven
+
+Le dipendenze sono dichiarate in `pom.xml` e vengono scaricate automaticamente.
 
 ```bash
-javac -cp "lib/postgresql-42.7.8.jar:lib/jbcrypt-0.4.jar" -d out $(find src -name '*.java')
+mvn clean test
+mvn package
 ```
 
 ## Esecuzione
 
 ```bash
-java -cp "out:lib/postgresql-42.7.8.jar:lib/jbcrypt-0.4.jar" Main
+mvn exec:java
 ```
+
+In alternativa, dopo `mvn package`, l'applicazione può essere avviata da IntelliJ
+usando la classe `Main`.
 
 ## Note utili
 

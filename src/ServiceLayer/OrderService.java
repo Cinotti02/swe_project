@@ -65,12 +65,7 @@ public class OrderService {
         );
 
         // salvo l'ordine → il DAO imposta l'id
-        orderDAO.addOrder(order);
-
-        // salvo ogni OrderItem collegandolo all'ordine
-        for (OrderItem item : items) {
-            orderItemDAO.addOrderItem(order.getId(), item);
-        }
+        orderDAO.addOrderWithItems(order, items);
 
         return order;
     }
@@ -80,12 +75,17 @@ public class OrderService {
     // ---------------------------------------------------------
 
     public void changeStatus(int orderId, OrderStatus newStatus) throws SQLException {
-        if (newStatus == null) throw new IllegalArgumentException("Status cannot be null");
-        orderDAO.updateStatus(orderId, newStatus);
+        if (newStatus == null) {
+            throw new IllegalArgumentException("Status cannot be null");
+        }
+
+        Order order = getOrderById(orderId);
+        applyTransition(order, newStatus);
+        orderDAO.updateStatus(orderId, order.getStatus());
     }
 
     public void cancelOrder(int orderId) throws SQLException {
-        orderDAO.updateStatus(orderId, OrderStatus.CANCELLED);
+        changeStatus(orderId, OrderStatus.CANCELLED);
     }
 
     // ---------------------------------------------------------
@@ -105,5 +105,15 @@ public class OrderService {
     public Order getOrderById(int orderId) throws SQLException {
         return orderDAO.getOrderById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("Order not found: " + orderId));
+    }
+
+    private void applyTransition(Order order, OrderStatus newStatus) {
+        switch (newStatus) {
+            case PREPARING -> order.markPreparing();
+            case READY -> order.markReady();
+            case RETIRED -> order.markRetired();
+            case CANCELLED -> order.cancel();
+            case CREATED -> throw new IllegalArgumentException("Cannot transition back to CREATED");
+        }
     }
 }

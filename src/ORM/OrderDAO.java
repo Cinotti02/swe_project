@@ -1,6 +1,7 @@
 package ORM;
 
 import DomainModel.order.Order;
+import DomainModel.order.OrderItem;
 import DomainModel.order.OrderStatus;
 import DomainModel.order.PaymentMethod;
 import DomainModel.search.OrderSearchParameters;
@@ -18,13 +19,41 @@ public class OrderDAO extends BaseDAO {
     // Crea un nuovo ordine
     // ------------------------------------------------------------
     public void addOrder(Order order) throws SQLException {
+        try (Connection conn = getConnection()) {
+            insertOrder(conn, order);
+        }
+    }
+
+    public void addOrderWithItems(Order order, List<OrderItem> items) throws SQLException {
+        if (order == null) {
+            throw new IllegalArgumentException("Order cannot be null");
+        }
+        if (items == null || items.isEmpty()) {
+            throw new IllegalArgumentException("Order must contain at least one item");
+        }
+
+        try (Connection conn = getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                insertOrder(conn, order);
+                insertOrderItems(conn, order.getId(), items);
+                conn.commit();
+            } catch (SQLException | RuntimeException e) {
+                conn.rollback();
+                throw e;
+            } finally {
+                conn.setAutoCommit(true);
+            }
+        }
+    }
+
+    private void insertOrder(Connection conn, Order order) throws SQLException {
         String sql = """
                 INSERT INTO orders(customer_id, created_at, status, payment_method, total_amount, notes)
                 VALUES (?, ?, ?, ?, ?, ?)
                 """;
 
-        try (Connection conn = DBConnection.getConnection();
-            PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)){
+        try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setInt(1, order.getCustomer().getId());
             ps.setTimestamp(2, Timestamp.valueOf(order.getCreatedAt()));
@@ -38,6 +67,29 @@ public class OrderDAO extends BaseDAO {
             try (ResultSet keys = ps.getGeneratedKeys()) {
                 if (keys.next()) {
                     order.setId(keys.getInt(1));
+                }
+            }
+        }
+    }
+
+    private void insertOrderItems(Connection conn, int orderId, List<OrderItem> items) throws SQLException {
+        String sql = """
+                INSERT INTO order_items(order_id, dish_id, unit_price, quantity)
+                VALUES (?, ?, ?, ?)
+                """;
+
+        try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            for (OrderItem item : items) {
+                ps.setInt(1, orderId);
+                ps.setInt(2, item.getDish().getId());
+                ps.setBigDecimal(3, item.getUnitPrice().getAmount());
+                ps.setInt(4, item.getQuantity());
+                ps.executeUpdate();
+
+                try (ResultSet keys = ps.getGeneratedKeys()) {
+                    if (keys.next()) {
+                        item.setId(keys.getInt(1));
+                    }
                 }
             }
         }

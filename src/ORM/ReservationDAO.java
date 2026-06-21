@@ -19,13 +19,44 @@ import java.util.Optional;
 public class ReservationDAO extends BaseDAO {
 
     public void addReservation(Reservation reservation) throws SQLException {
+        try (Connection conn = getConnection()) {
+            insertReservation(conn, reservation);
+        }
+    }
+
+    public List<MergeTable> addReservationWithTables(Reservation reservation,
+                                                     List<Table> tables) throws SQLException {
+        if (reservation == null) {
+            throw new IllegalArgumentException("Reservation cannot be null");
+        }
+        if (tables == null || tables.isEmpty()) {
+            throw new IllegalArgumentException("At least one table is required");
+        }
+
+        try (Connection conn = getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                insertReservation(conn, reservation);
+                List<MergeTable> assignments = buildAssignments(reservation, tables);
+                insertTableAssignments(conn, assignments);
+                conn.commit();
+                return assignments;
+            } catch (SQLException | RuntimeException e) {
+                conn.rollback();
+                throw e;
+            } finally {
+                conn.setAutoCommit(true);
+            }
+        }
+    }
+
+    private void insertReservation(Connection conn, Reservation reservation) throws SQLException {
         String sql = """
                 INSERT INTO reservations(customer_id, guests, reservation_date, slot_id, status, notes)
                 VALUES (?, ?, ?, ?, ?, ?)
                 """;
 
-        try (Connection conn = getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setInt(1, reservation.getCustomer().getId());
             ps.setInt(2, reservation.getNumberOfGuests());
@@ -39,6 +70,45 @@ public class ReservationDAO extends BaseDAO {
             try (ResultSet keys = ps.getGeneratedKeys()) {
                 if (keys.next()) {
                     reservation.setId(keys.getInt(1));
+                }
+            }
+        }
+    }
+
+    private List<MergeTable> buildAssignments(Reservation reservation, List<Table> tables) {
+        List<MergeTable> assignments = new ArrayList<>();
+        String groupId = "RES-" + reservation.getId();
+
+        for (Table table : tables) {
+            assignments.add(new MergeTable(
+                    reservation,
+                    table,
+                    Math.max(1, table.getSeats()),
+                    groupId
+            ));
+        }
+        return assignments;
+    }
+
+    private void insertTableAssignments(Connection conn,
+                                        List<MergeTable> assignments) throws SQLException {
+        String sql = """
+                INSERT INTO merge_tables(reservation_id, table_id, seats_assigned, merged_group_id)
+                VALUES (?, ?, ?, ?)
+                """;
+
+        try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            for (MergeTable assignment : assignments) {
+                ps.setInt(1, assignment.getReservation().getId());
+                ps.setInt(2, assignment.getTable().getId());
+                ps.setInt(3, assignment.getSeatsAssigned());
+                ps.setString(4, assignment.getMergedGroupId());
+                ps.executeUpdate();
+
+                try (ResultSet keys = ps.getGeneratedKeys()) {
+                    if (keys.next()) {
+                        assignment.setId(keys.getInt(1));
+                    }
                 }
             }
         }

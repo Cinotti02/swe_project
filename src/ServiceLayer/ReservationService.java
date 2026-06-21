@@ -17,7 +17,6 @@ import ORM.TableDAO;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -76,10 +75,7 @@ public class ReservationService {
         LocalDateTime reservationDateTime = LocalDateTime.of(date, slot.getStartTime());
         Reservation reservation = new Reservation(customer, reservationDateTime, slot, guests, notes);
 
-        reservationDAO.addReservation(reservation);
-
-        List<MergeTable> assignments = buildAssignments(reservation, combination);
-        reservationDAO.saveTableAssignments(assignments);
+        List<MergeTable> assignments = reservationDAO.addReservationWithTables(reservation, combination);
         reservation.setTables(assignments);
 
         notifyCustomer(reservation, "Prenotazione ricevuta per " + date + " alle " + slot.getStartTime(),
@@ -163,18 +159,6 @@ public class ReservationService {
 
     public List<Slot> listOpenSlots() throws SQLException {
         return slotDAO.getOpenSlots();
-    }
-
-    private List<MergeTable> buildAssignments(Reservation reservation, List<Table> tables) {
-        List<MergeTable> assignments = new ArrayList<>();
-        String groupId = "RES-" + reservation.getId();
-
-        for (Table table : tables) {
-            int seats = Math.max(1, table.getSeats());
-            MergeTable mergeTable = new MergeTable(reservation, table, seats, groupId);
-            assignments.add(mergeTable);
-        }
-        return assignments;
     }
 
     private void notifyCustomer(Reservation reservation, String message, TypeNotification type) {
