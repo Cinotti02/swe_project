@@ -1,4 +1,4 @@
-package test.ServiceLayer;
+package ServiceLayer;
 
 import DomainModel.menu.Category;
 import DomainModel.menu.Dish;

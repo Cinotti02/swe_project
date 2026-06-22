@@ -1,4 +1,4 @@
-package test.DomainModel;
+package DomainModel;
 
 import DomainModel.search.DishSearchParameters;
 import DomainModel.search.OrderSearchParameters;

@@ -1,4 +1,4 @@
-package test.ServiceLayer;
+package ServiceLayer;
 
 import DomainModel.reservation.Table;
 import ServiceLayer.TableAllocationService;

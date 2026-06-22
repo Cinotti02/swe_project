@@ -1,4 +1,4 @@
-package test.ServiceLayer;
+package ServiceLayer;
 
 import DomainModel.notification.Notification;
 import DomainModel.notification.TypeNotification;

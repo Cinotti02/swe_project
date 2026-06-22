@@ -42,7 +42,7 @@
     <!-- Mantiene il layout attuale senza spostare i sorgenti. -->
     <build>
         <sourceDirectory>${project.basedir}/src</sourceDirectory>
-        <testSourceDirectory>${project.basedir}/src/test</testSourceDirectory>
+        <testSourceDirectory>${project.basedir}/test</testSourceDirectory>
 
         <plugins>
             <plugin>
@@ -52,9 +52,6 @@
                 <configuration>
                     <release>${maven.compiler.release}</release>
                     <encoding>${project.build.sourceEncoding}</encoding>
-                    <excludes>
-                        <exclude>test/**</exclude>
-                    </excludes>
                 </configuration>
             </plugin>
 

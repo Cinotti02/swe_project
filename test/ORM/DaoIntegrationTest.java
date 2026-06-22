@@ -1,4 +1,4 @@
-package test.ORM;
+package ORM;
 
 import DomainModel.menu.Category;
 import DomainModel.menu.Dish;

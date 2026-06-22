@@ -1,4 +1,4 @@
-package test.DomainModel;
+package DomainModel;
 
 import DomainModel.search.SearchResult;
 import org.junit.jupiter.api.Test;

@@ -1,4 +1,4 @@
-package test.DomainModel;
+package DomainModel;
 
 import DomainModel.reservation.ReservationStatus;
 import DomainModel.search.ReservationSearchParameters;

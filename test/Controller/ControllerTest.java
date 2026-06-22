@@ -1,4 +1,4 @@
-package test.Controller;
+package Controller;
 
 import Controller.AuthController;
 import Controller.CustomerController;

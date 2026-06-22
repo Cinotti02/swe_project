@@ -1,4 +1,4 @@
-package test.DomainModel;
+package DomainModel;
 
 import DomainModel.order.OrderStatus;
 import DomainModel.order.PaymentMethod;
