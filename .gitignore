@@ -35,3 +35,17 @@ bin/
 
 ### Configurazione locale ###
 /src/ORM/db.properties
+
+### File temporanei di lavorazione ###
+/tmp/
+
+### File ausiliari LaTeX ###
+/relazione/*.aux
+/relazione/*.log
+/relazione/*.out
+/relazione/*.toc
+/relazione/*.lof
+/relazione/*.lot
+/relazione/*.synctex.gz
+/relazione/*.fls
+/relazione/*.fdb_latexmk
